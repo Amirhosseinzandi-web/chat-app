@@ -1,26 +1,36 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectToDatabase from "./lib/db.js";
+import authRoute from "./routes/authRoute.js"
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
+
+const corsOptions = {
+    origin: '*',
+    credentials: true,
+    optionsSuccessStatus: 200,
+    // exposedHeaders: ['x-auth']
+};
 
 
 
 dotenv.config();
 const app = express();
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser());
 
 
 
-connectToDatabase()
+// *************Auth Routes*************************************
 
-
-
-app.get("/", (req, res) => {
-    res.send("hello world");
-})
+app.use("/api/auth", authRoute)
 
 
 
 
-app.listen(5000, () => {
-    console.log("server is running on port 5000");
-
+app.listen(process.env.PORT, () => {
+    console.log(`server is running on port ${process.env.PORT}`);
+    connectToDatabase()
 })
