@@ -21,6 +21,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 
+connectToDatabase()
+
 
 // *************Auth Routes*************************************
 
@@ -31,5 +33,4 @@ app.use("/api/auth", authRoute)
 
 app.listen(process.env.PORT, () => {
     console.log(`server is running on port ${process.env.PORT}`);
-    connectToDatabase()
 })
