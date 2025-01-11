@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import connectToDatabase from "./lib/db.js";
 
 
 
@@ -8,7 +9,11 @@ const app = express();
 
 
 
-app.get("/",  (req, res) => {
+connectToDatabase()
+
+
+
+app.get("/", (req, res) => {
     res.send("hello world");
 })
 
