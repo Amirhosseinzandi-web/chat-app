@@ -100,3 +100,15 @@ export const updateProfile = async (req, res) => {
         return res.status(500).json({ message: "server-error" });
     }
 }
+
+
+
+export const getAllUsers = () => {
+    try {
+        const allUsers = userModel.find({})
+        res.send(allUsers)
+    } catch (err) {
+        console.log("error in get all users, error is ==>" , err);
+        return res.status(404)
+    }
+}

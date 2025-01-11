@@ -9,8 +9,7 @@ import cookieParser from "cookie-parser";
 const corsOptions = {
     origin: '*',
     credentials: true,
-    optionsSuccessStatus: 200,
-    // exposedHeaders: ['x-auth']
+    optionsSuccessStatus: 200
 };
 
 
