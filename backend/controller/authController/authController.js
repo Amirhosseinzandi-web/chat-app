@@ -103,12 +103,12 @@ export const updateProfile = async (req, res) => {
 
 
 
-export const getAllUsers = () => {
+export const getAllUsers = async (req, res) => {
     try {
-        const allUsers = userModel.find({})
-        res.send(allUsers)
+        const allUsers = await userModel.find({})
+        res.json(allUsers)
     } catch (err) {
-        console.log("error in get all users, error is ==>" , err);
+        console.log("error in get all users, error is ==>", err);
         return res.status(404)
     }
 }
