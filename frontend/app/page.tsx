@@ -1,3 +1,4 @@
+import HomeComponent from "@/components/Home/Home";
 
 
 
@@ -5,9 +6,7 @@
 
 const Home = () => {
   return (
-    <div>
-      this is home
-    </div>
+    <HomeComponent />
   );
 }
 

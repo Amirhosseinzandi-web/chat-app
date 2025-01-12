@@ -8,14 +8,16 @@ import { useEffect } from "react";
 
 
 const Navbar = () => {
-    const { authUser, checkAuth } = useAuthStore();
+//     const { authUser, checkAuth } = useAuthStore();
 
-    useEffect(() => {
-        checkAuth();
-
-    }, [checkAuth])
-
-    console.log(authUser);
+//     useEffect(() => {
+//         checkAuth();
+//     }, [])
+    
+    
+//    useEffect(()=>{
+//        console.log(authUser);
+//    },[authUser])
 
 
 

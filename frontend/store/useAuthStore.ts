@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { axiosInstance } from "@/lib/axios.js";
+import { axiosInstance } from "@/lib/axios";
 
 
 
 type AuthStoreType = {
-    authUser: null | string,
+    authUser: null | [],
     isSigningUp: boolean,
     isLoginingIn: boolean,
     isUpdatingProfile: boolean,
@@ -24,8 +24,7 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
     isCheckingAuth: true,
     checkAuth: async () => {
         try {
-            const res = await axiosInstance.get("/auth/get-users");
-            console.log(res);
+            const res = await axiosInstance.get("/auth/check");
 
             set({ authUser: res.data })
 
