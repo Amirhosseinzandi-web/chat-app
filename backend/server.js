@@ -1,9 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectToDatabase from "./lib/db.js";
-import authRoute from "./routes/authRoute.js"
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import authRoute from "./routes/authRoute.js"
+import messageRoute from "./routes/messageRoute.js"
 
 
 const corsOptions = {
@@ -27,6 +28,7 @@ connectToDatabase()
 // *************Auth Routes*************************************
 
 app.use("/api/auth", authRoute)
+app.use("/api/message", messageRoute)
 
 
 
