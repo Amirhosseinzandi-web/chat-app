@@ -112,3 +112,13 @@ export const getAllUsers = async (req, res) => {
         return res.status(404)
     }
 }
+
+
+export const checkAuth = (req , res) =>{
+    try {
+        res.status(200).json(req.user);
+    } catch (err) {
+        console.log(`error in checkAuth controller, error is ==> ${err}`);
+        return res.status(500).json({ message: "server-error" });
+    }
+}
