@@ -8,7 +8,7 @@ import messageRoute from "./routes/messageRoute.js"
 
 
 const corsOptions = {
-    origin: '*',
+    origin: ["http://localhost:3000", "https://chat-app-frontend-ten-alpha.vercel.app"],
     credentials: true,
     optionsSuccessStatus: 200
 };
