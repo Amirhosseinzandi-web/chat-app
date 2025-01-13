@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
             default: ""
         },
         tokens: [
-            { tokenKey: String, time: { type: Date, default: Date.now() } }
+            { tokenKey: String, time: { type: Date, default: Date.now(), expires: "7d" } }
         ]
     },
     { timestamps: true }

@@ -7,7 +7,7 @@ const HomeComponent = () => {
 
     return (
         <div>
-            this is home
+            {/* this is home */}
         </div>
     );
 }
