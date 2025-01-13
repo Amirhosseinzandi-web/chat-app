@@ -68,7 +68,12 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.cookie("jwt", "", { maxAge: 0 });
+        // res.cookie("jwt", "", { maxAge: 0 });
+        res.clearCookie('jwt', {
+            httpOnly: true,
+            sameSite: 'None',
+            secure: process.env.NODE_ENV === 'production'
+        });
         res.status(200).json({ message: "logout success" });
     } catch (err) {
         console.log(`error in logout controller, error is ==> ${err}`);
@@ -114,7 +119,7 @@ export const getAllUsers = async (req, res) => {
 }
 
 
-export const checkAuth = (req , res) =>{
+export const checkAuth = (req, res) => {
     try {
         res.status(200).json(req.user);
     } catch (err) {
