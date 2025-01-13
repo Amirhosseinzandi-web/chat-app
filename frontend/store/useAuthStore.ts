@@ -5,17 +5,19 @@ import toast from "react-hot-toast";
 
 
 type AuthStoreType = {
-    authUser: null | [],
-    isSigningUp: boolean,
-    isLoginingIn: boolean,
-    isUpdatingProfile: boolean,
-    isCheckingAuth: boolean,
+    authUser: null | []
+    isSigningUp: boolean
+    isLoginingIn: boolean
+    isUpdatingProfile: boolean
+    isCheckingAuth: boolean
 
-    checkAuth: () => Promise<void>,
+    checkAuth: () => Promise<void>
 
     signUp: (data: {}) => Promise<void>
 
     logOut: () => Promise<void>
+
+    login: (data: {}) => Promise<void>
 }
 
 
@@ -25,6 +27,7 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
     isSigningUp: false,
     isLoginingIn: false,
     isUpdatingProfile: false,
+
 
     isCheckingAuth: true,
     checkAuth: async () => {
@@ -54,10 +57,11 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
 
         } catch (err) {
             toast.error("something went wrong");
-            set({ isSigningUp: false })
             set({ authUser: null })
             console.log("error in use Auth store sign up , error is ==> ", err);
-
+        }
+        finally{
+            set({ isSigningUp: false })
         }
     },
 
@@ -73,5 +77,20 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
         } catch (err) {
             toast.error("logout failed");
         }
-    }
+    },
+
+    login: async (data) => {
+        set({ isLoginingIn: true })
+        try {
+            const res = await axiosInstance.post("/auth/login", data);
+            set({ authUser: res.data })
+            toast.success("login successfully");
+
+        } catch (err) {
+            toast.error("login failed");
+        }
+        finally {
+            set({ isLoginingIn: false })
+        }
+    },
 }))
