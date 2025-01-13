@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/shared/Navbar/Navbar";
+import CustomLayout from "@/components/shared/CustomLayout";
 
 
 
@@ -16,11 +17,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-      >
-        <Navbar />
-        {children}
+      <body>
+        <CustomLayout>
+          <Navbar />
+          {children}
+        </CustomLayout>
       </body>
-    </html>
+    </html >
   );
 }
