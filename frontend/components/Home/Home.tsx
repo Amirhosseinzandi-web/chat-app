@@ -11,10 +11,6 @@ const HomeComponent = () => {
     const router = useRouter();
 
 
-    useEffect(() => {
-        checkAuth()
-    }, [])
-
     // useEffect(() => {
     //     if (!authUser) {
     //         router.push("/login")
@@ -22,9 +18,7 @@ const HomeComponent = () => {
     // }, [authUser])
 
 
-    if (isCheckingAuth) {
-        return <span className="loading loading-ring loading-lg absolute top-1/2 left-1/2"></span>
-    }
+   
 
     return (
         <div>

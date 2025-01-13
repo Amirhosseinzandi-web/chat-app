@@ -14,6 +14,8 @@ type AuthStoreType = {
     checkAuth: () => Promise<void>,
 
     signUp: (data: {}) => Promise<void>
+
+    logOut: () => Promise<void>
 }
 
 
@@ -42,9 +44,9 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
     },
 
     signUp: async (data) => {
-        try {
+        set({ isSigningUp: true })
 
-            set({ isSigningUp: true })
+        try {
             const res = await axiosInstance.post("/auth/signup", data);
 
             set({ authUser: res.data })
@@ -56,6 +58,20 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
             set({ authUser: null })
             console.log("error in use Auth store sign up , error is ==> ", err);
 
+        }
+    },
+
+    logOut: async () => {
+        try {
+
+            await axiosInstance.delete("/auth/logout");
+
+            set({ authUser: null })
+            toast.success("logout successfully");
+
+
+        } catch (err) {
+            toast.error("logout failed");
         }
     }
 }))

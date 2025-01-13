@@ -17,11 +17,7 @@ const SignUpComponent = () => {
 
     const router = useRouter();
 
-    // useEffect(() => {
-    //     if (authUser) {
-    //         router.push("/")
-    //     }
-    // }, [authUser])
+   
 
 
     const validateForm = () => {
