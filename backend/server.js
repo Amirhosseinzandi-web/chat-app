@@ -12,9 +12,7 @@ const app = express();
 
 const corsOptions = {
     origin: ["http://localhost:3000", "https://chat-app-frontend-ten-alpha.vercel.app"],
-    credentials: true, // Important for cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
     optionsSuccessStatus: 200
 };
 

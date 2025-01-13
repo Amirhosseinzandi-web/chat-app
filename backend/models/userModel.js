@@ -52,8 +52,6 @@ userSchema.methods.generateAuthToken = async function (res) {
         res.cookie("jwt", token, {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             httpOnly: true, // cookie is only accessible from the server not js
-            sameSite: "Lax",
-            secure: process.env.NODE_ENV === 'production'
         })
         return token
     }
