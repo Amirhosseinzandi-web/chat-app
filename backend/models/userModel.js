@@ -53,7 +53,7 @@ userSchema.methods.generateAuthToken = async function (res) {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             httpOnly: true, // cookie is only accessible from the server not js
             sameSite: 'None',
-            secure: true // ensure you're using HTTPS
+            secure: process.env.NODE_ENV === 'production' // ensure you're using HTTPS
         })
         return token
     }
