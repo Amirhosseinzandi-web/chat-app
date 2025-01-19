@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Camera, Mail, User } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
+import imageCompression from "browser-image-compression";
 
 const ProfilePageComponent = () => {
     const { authUser, isUpdatingProfile, updateProfile, isCheckingAuth, checkAuth } = useAuthStore();
@@ -31,24 +32,35 @@ const ProfilePageComponent = () => {
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;
-
+      
         const file = e.target.files[0];
-
-        const reader = new FileReader();
-
-        reader.readAsDataURL(file);
-
-        reader.onload = async () => {
-            const base64Image = reader.result;
-            if (typeof base64Image === 'string') {
-                setSelectedImg(base64Image);
-                // console.log(base64Image);
-                await updateProfile({ profilePic: base64Image });
-            } else {
-                console.error('Invalid image data');
-            }
+      
+        // فشرده‌سازی تصویر
+        const options = {
+          maxSizeMB: 0.05, // حداکثر حجم فایل: ۵۰ کیلوبایت
+          maxWidthOrHeight: 500, // حداکثر عرض یا ارتفاع: ۱۰۲۴ پیکسل
+          useWebWorker: true, // استفاده از Web Worker برای بهبود عملکرد
         };
-    };
+      
+        try {
+          const compressedFile = await imageCompression(file, options);
+      
+          const reader = new FileReader();
+          reader.readAsDataURL(compressedFile);
+      
+          reader.onload = async () => {
+            const base64Image = reader.result;
+            if (typeof base64Image === "string") {
+              setSelectedImg(base64Image);
+              await updateProfile({ profilePic: base64Image });
+            } else {
+              console.error("Invalid image data");
+            }
+          };
+        } catch (error) {
+          console.error("Error compressing image:", error);
+        }
+      };
 
     // useEffect(()=>{
     //     console.log(authUser?.createdAt.split("T")[0]);
@@ -89,7 +101,7 @@ const ProfilePageComponent = () => {
                                     type="file"
                                     id="avatar-upload"
                                     className="hidden"
-                                    accept="image/*"
+                                    accept="image/png, image/jpeg, image/jpg"
                                     onChange={handleImageUpload}
                                     disabled={isUpdatingProfile}
                                 />
