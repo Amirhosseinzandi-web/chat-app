@@ -19,15 +19,15 @@ const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 
 
 
-    useEffect(() => {
-        if (!isCheckingAuth) {
-            if (authUser) {
-                router.push("/")
-            } else {
-                router.push("/login")
-            }
-        }
-    }, [authUser, isCheckingAuth])
+    // useEffect(() => {
+    //     if (!isCheckingAuth) {
+    //         if (authUser) {
+    //             router.push("/")
+    //         } else {
+    //             router.push("/login")
+    //         }
+    //     }
+    // }, [authUser, isCheckingAuth])
 
 
     if (isCheckingAuth) {

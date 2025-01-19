@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AuthImagePattern from "../shared/AuthImagePattern";
+import { useRouter } from "next/navigation";
 
 
 
@@ -13,8 +14,25 @@ import AuthImagePattern from "../shared/AuthImagePattern";
 const LoginComponent = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({ email: "", password: "" });
+    const { login, isLoginingIn, authUser, isCheckingAuth, checkAuth } = useAuthStore();
 
-    const { login, isLoginingIn } = useAuthStore();
+    const router = useRouter();
+
+
+    useEffect(() => {
+        checkAuth();
+    }, [])
+
+
+    useEffect(() => {
+        if (!isCheckingAuth) {
+            if (authUser) {
+                router.push("/")
+            } else {
+                router.push("/login")
+            }
+        }
+    }, [authUser, isCheckingAuth])
 
 
 

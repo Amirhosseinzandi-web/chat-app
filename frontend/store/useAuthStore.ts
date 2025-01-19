@@ -3,9 +3,16 @@ import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 
 
+type User = {
+    profilePic?: string;
+    fullName: string;
+    email: string;
+    createdAt: string;
+};
+
 
 type AuthStoreType = {
-    authUser: null | []
+    authUser: null | User
     isSigningUp: boolean
     isLoginingIn: boolean
     isUpdatingProfile: boolean
@@ -18,6 +25,8 @@ type AuthStoreType = {
     logOut: () => Promise<void>
 
     login: (data: {}) => Promise<void>
+
+    updateProfile: (data: {}) => Promise<void>
 }
 
 
@@ -60,7 +69,7 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
             set({ authUser: null })
             console.log("error in use Auth store sign up , error is ==> ", err);
         }
-        finally{
+        finally {
             set({ isSigningUp: false })
         }
     },
@@ -93,4 +102,24 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
             set({ isLoginingIn: false })
         }
     },
+
+
+    updateProfile: async (data) => {
+        const loadingToast = toast.loading("updating profile");
+        set({ isUpdatingProfile: true });
+        try {
+            const res = await axiosInstance.put("/auth/update-profile", data);
+            set({ authUser: res.data });
+            toast.dismiss(loadingToast);
+            toast.success("Profile updated successfully");
+        } catch (error) {
+            console.log("error in update profile:", error);
+            toast.dismiss(loadingToast);
+            toast.error("Profile update failed");
+        } finally {
+            set({ isUpdatingProfile: false });
+            // toast.dismiss();
+        }
+    },
+
 }))

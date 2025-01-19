@@ -41,7 +41,7 @@ const Navbar = () => {
 
                         {authUser && (
                             <div className="flex gap-2">
-                                <Link href="/profile" className="btn btn-sm gap-2">
+                                <Link href="/profile-page" className="btn btn-sm gap-2">
                                     <User className="size-5" />
                                     <span className="hidden sm:inline">Profile</span>
                                 </Link>
