@@ -105,6 +105,7 @@ export const useAuthStore = create<AuthStoreType>((set) => ({
 
 
     updateProfile: async (data) => {
+
         const loadingToast = toast.loading("updating profile");
         set({ isUpdatingProfile: true });
         try {
