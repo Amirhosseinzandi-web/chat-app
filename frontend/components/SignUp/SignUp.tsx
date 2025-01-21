@@ -11,13 +11,28 @@ import toast from "react-hot-toast";
 
 
 const SignUpComponent = () => {
-    const { authUser, isCheckingAuth, isSigningUp, signUp } = useAuthStore()
+    const { authUser, isCheckingAuth, isSigningUp, signUp, checkAuth } = useAuthStore()
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
 
     const router = useRouter();
 
-   
+
+    useEffect(() => {
+        checkAuth();
+    }, [])
+
+
+
+    useEffect(() => {
+        if (!isCheckingAuth) {
+            if (authUser) {
+                router.push("/")
+            } else {
+                router.push("/signup")
+            }
+        }
+    }, [authUser, isCheckingAuth])
 
 
     const validateForm = () => {
@@ -70,7 +85,7 @@ const SignUpComponent = () => {
                                 <input
                                     type="text"
                                     className="input input-bordered w-full pl-10"
-                                    placeholder="Amir Zandi"
+                                    placeholder="your full name"
                                     value={formData.fullName}
                                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                 />
