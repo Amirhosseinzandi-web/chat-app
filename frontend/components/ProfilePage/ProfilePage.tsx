@@ -32,35 +32,35 @@ const ProfilePageComponent = () => {
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;
-      
+
         const file = e.target.files[0];
-      
+
         // فشرده‌سازی تصویر
         const options = {
-          maxSizeMB: 0.05, // حداکثر حجم فایل: ۵۰ کیلوبایت
-          maxWidthOrHeight: 500, // حداکثر عرض یا ارتفاع: ۱۰۲۴ پیکسل
-          useWebWorker: true, // استفاده از Web Worker برای بهبود عملکرد
+            maxSizeMB: 0.05, // حداکثر حجم فایل: ۵۰ کیلوبایت
+            maxWidthOrHeight: 500, // حداکثر عرض یا ارتفاع: ۱۰۲۴ پیکسل
+            useWebWorker: true, // استفاده از Web Worker برای بهبود عملکرد
         };
-      
+
         try {
-          const compressedFile = await imageCompression(file, options);
-      
-          const reader = new FileReader();
-          reader.readAsDataURL(compressedFile);
-      
-          reader.onload = async () => {
-            const base64Image = reader.result;
-            if (typeof base64Image === "string") {
-              setSelectedImg(base64Image);
-              await updateProfile({ profilePic: base64Image });
-            } else {
-              console.error("Invalid image data");
-            }
-          };
+            const compressedFile = await imageCompression(file, options);
+
+            const reader = new FileReader();
+            reader.readAsDataURL(compressedFile);
+
+            reader.onload = async () => {
+                const base64Image = reader.result;
+                if (typeof base64Image === "string") {
+                    setSelectedImg(base64Image);
+                    await updateProfile({ profilePic: base64Image });
+                } else {
+                    console.error("Invalid image data");
+                }
+            };
         } catch (error) {
-          console.error("Error compressing image:", error);
+            console.error("Error compressing image:", error);
         }
-      };
+    };
 
     // useEffect(()=>{
     //     console.log(authUser?.createdAt.split("T")[0]);
@@ -69,7 +69,7 @@ const ProfilePageComponent = () => {
 
 
     return (
-        <div className="h-screen pt-20">
+        <div className="min-h-[100dvh] pt-20">
             <div className="max-w-2xl mx-auto p-4 py-8">
                 <div className="bg-base-300 rounded-xl p-6 space-y-8">
                     <div className="text-center">
