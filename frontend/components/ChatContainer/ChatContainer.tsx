@@ -23,14 +23,14 @@ const ChatContainerComponent = () => {
     }, [selectedUser, getMessages])
 
 
-    useEffect(() => {
-        // Add console log to check messages
-        console.log('Messages:', messages)
-    }, [messages])
+    // useEffect(() => {
+    //     // Add console log to check messages
+    //     console.log('Messages:', messages)
+    // }, [messages])
 
-    useEffect(() => {
-        console.log('Auth User ID:', authUser?._id)
-    }, [authUser])
+    // useEffect(() => {
+    //     console.log('Auth User ID:', authUser?._id)
+    // }, [authUser])
 
 
 
