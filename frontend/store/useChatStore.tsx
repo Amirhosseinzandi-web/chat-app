@@ -2,18 +2,27 @@ import { axiosInstance } from "@/lib/axios";
 import { create } from "zustand";
 
 
+type UsersType = {
+    _id: string
+    email: string
+    password: string
+    profilePic: string
+    fullName: string
+    tokens: [{ tokenKey: string, time: string }]
+}
+
+
 
 type ChatStoreType = {
     messages: [],
     users: any,
-    // selectedUser: null | { id: string, fullName: string, profilePic: string },
-    selectedUser: any,
+    selectedUser: null | UsersType,
     isUsersLoading: boolean,
     isMessagesLoading: boolean,
 
     getUsers: () => Promise<void>,
     getMessages: (userId: string) => Promise<void>,
-    setSelectedUser: (selectedUser: null | { id: string, fullName: string, profilePic: string }) => void
+    setSelectedUser: (selectedUser: null | UsersType) => void
 }
 
 
