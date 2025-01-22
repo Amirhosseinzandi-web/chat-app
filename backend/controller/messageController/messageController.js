@@ -55,8 +55,8 @@ export const sendMessage = async (req, res) => {
         const newMessage = await messageModel.create({
             senderId,
             receiverId,
-            text : text || "",
-            image: imageUrl || ""
+            text : text,
+            image: imageUrl
         })
 
         res.status(201).json(newMessage)
