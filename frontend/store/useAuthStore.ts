@@ -17,7 +17,8 @@ type AuthStoreType = {
     isLoginingIn: boolean
     isUpdatingProfile: boolean
     isCheckingAuth: boolean
-    onlineUsers: []
+    // task : fix type onlineUsers
+    onlineUsers: any
 
     checkAuth: () => Promise<void>
 

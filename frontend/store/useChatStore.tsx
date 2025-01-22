@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
+import toast from "react-hot-toast";
 import { create } from "zustand";
 
 
@@ -14,7 +15,7 @@ type UsersType = {
 
 
 type ChatStoreType = {
-    messages: [],
+    messages: {}[],
     users: any,
     selectedUser: null | UsersType,
     isUsersLoading: boolean,
@@ -23,11 +24,12 @@ type ChatStoreType = {
     getUsers: () => Promise<void>,
     getMessages: (userId: string) => Promise<void>,
     setSelectedUser: (selectedUser: null | UsersType) => void
+    sendMessage: (messageData: {}) => Promise<void>
 }
 
 
 
-export const useChatStore = create<ChatStoreType>((set) => ({
+export const useChatStore = create<ChatStoreType>((set, get) => ({
     messages: [],
     users: [],
     selectedUser: null,
@@ -60,6 +62,15 @@ export const useChatStore = create<ChatStoreType>((set) => ({
         }
         finally {
             set({ isMessagesLoading: false })
+        }
+    },
+    sendMessage: async (messageData) => {
+        const { selectedUser, messages } = get()
+        try {
+            const res = await axiosInstance.post(`/message/send/${selectedUser?._id}`, messageData);
+            set({ messages: [...messages, res.data] })
+        } catch (error) {
+            toast.error("something went wrong");
         }
     },
     // todo : optimize this one later
