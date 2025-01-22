@@ -28,6 +28,7 @@ type ChatStoreType = {
     selectedUser: null | UsersType,
     isUsersLoading: boolean,
     isMessagesLoading: boolean,
+    isSendingMessage: boolean
 
     getUsers: () => Promise<void>,
     getMessages: (userId: string) => Promise<void>,
@@ -43,7 +44,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
-
+    isSendingMessage: false,
 
 
 
@@ -73,12 +74,16 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         }
     },
     sendMessage: async (messageData) => {
+        set({ isSendingMessage: true })
         const { selectedUser, messages } = get()
         try {
             const res = await axiosInstance.post(`/message/send/${selectedUser?._id}`, messageData);
             set({ messages: [...messages, res.data] })
         } catch (error) {
             toast.error("something went wrong");
+        }
+        finally {
+            set({ isSendingMessage: false })
         }
     },
     // todo : optimize this one later

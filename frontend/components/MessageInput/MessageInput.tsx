@@ -15,7 +15,7 @@ const MessageInput = () => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
 
-    const { sendMessage, messages, isMessagesLoading } = useChatStore();
+    const { sendMessage, messages, isMessagesLoading, isSendingMessage } = useChatStore();
 
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,7 +131,7 @@ const MessageInput = () => {
                 <button
                     type="submit"
                     className="btn btn-sm btn-circle"
-                    disabled={!text.trim() && !imagePreview}
+                    disabled={(!text.trim() && !imagePreview) || (isSendingMessage)}
                 >
                     <Send size={22} />
                 </button>
