@@ -69,11 +69,15 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         // res.cookie("jwt", "", { maxAge: 0 });
+        const currentToken = req.token
+        await userModel.findOneAndUpdate({ _id: req.user._id }, { $pull: { tokens: { tokenKey: currentToken } } });
+
         res.clearCookie('jwt', {
             httpOnly: true,
             sameSite: 'None',
             secure: process.env.NODE_ENV === 'production'
         });
+
         res.status(200).json({ message: "logout success" });
     } catch (err) {
         console.log(`error in logout controller, error is ==> ${err}`);
