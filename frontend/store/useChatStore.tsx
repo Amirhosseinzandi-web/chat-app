@@ -12,10 +12,18 @@ type UsersType = {
     tokens: [{ tokenKey: string, time: string }]
 }
 
+type MessagesType = {
+    senderId: string
+    receiverId: string
+    text: string
+    image: string
+    createdAt: string
+}
+
 
 
 type ChatStoreType = {
-    messages: {}[],
+    messages: MessagesType[],
     users: any,
     selectedUser: null | UsersType,
     isUsersLoading: boolean,

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 
 type User = {
+    _id: string;
     profilePic?: string;
     fullName: string;
     email: string;
