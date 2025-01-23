@@ -15,6 +15,8 @@ const corsOptions = {
 };
 
 
+app.use(cors())
+
 const io = new Server(server, {
     cors: corsOptions
 });
