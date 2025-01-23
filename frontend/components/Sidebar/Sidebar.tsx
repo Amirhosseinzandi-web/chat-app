@@ -11,9 +11,9 @@ import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 const SidebarComponent = () => {
     const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore()
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-    // const { onlineUsers } = useAuthStore();
+    const { onlineUsers } = useAuthStore();
 
-    const onlineUsers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
+    // const onlineUsers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
     // const filteredUsers = showOnlineOnly
     //     ? users.filter((user) => onlineUsers.includes(user._id))
     //     : users;
@@ -25,6 +25,11 @@ const SidebarComponent = () => {
     }, [getUsers])
 
 
+    // useEffect(() => {
+    //     console.log("online users ==>", onlineUsers);
+    //     console.log("users ==>", users);
+
+    // }, [onlineUsers, users])
 
 
     if (isUsersLoading) return <SidebarSkeleton />

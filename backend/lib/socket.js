@@ -22,11 +22,23 @@ const io = new Server(server, {
 });
 
 
+// used to store online users
+const userSocketMap = {}
+
+
 io.on("connection", (socket) => {
     // console.log("a user connected", socket.id);
 
+    const { userId } = socket.handshake.query;
+    if (userId) userSocketMap[userId] = socket.id
+
+    io.emit("getOnlineUsers", Object.keys(userSocketMap))
+    // console.log(userSocketMap);
+
     socket.on("disconnect", () => {
-        // console.log("user disconnected", socket.id);
+        // console.log("user disconnected");
+        delete userSocketMap[userId]
+        io.emit("getOnlineUsers", Object.keys(userSocketMap))
     })
 
 })

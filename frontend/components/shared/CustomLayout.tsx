@@ -2,22 +2,25 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useThemeStore } from "@/store/useThemeStore";
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 
 
 
 const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const { isCheckingAuth, checkAuth } = useAuthStore()
+    const { isCheckingAuth, checkAuth, onlineUsers } = useAuthStore()
     const { theme } = useThemeStore()
-    const router = useRouter();
 
 
     useEffect(() => {
         checkAuth();
     }, [])
 
+
+    // useEffect(() => {
+    //     console.log(onlineUsers);
+
+    // }, [onlineUsers])
 
 
     if (isCheckingAuth) {
