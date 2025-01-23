@@ -140,7 +140,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
         const { authUser } = get()
         if (!authUser || get().socket?.connected) return
 
-        const socket = io(process.env.NEXT_PUBLIC_CHAT_APP_API_URL);
+        const socket = io("http://localhost:5000");
         socket.connect();
         set({ socket })
     },
