@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { useAuthStore } from "@/store/useAuthStore";
 
 
+
 type UsersType = {
     _id: string
     email: string
@@ -83,6 +84,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         try {
             const res = await axiosInstance.post(`/api/message/send/${selectedUser?._id}`, messageData);
             set({ messages: [...messages, res.data] })
+            console.log(res);
 
 
         } catch (error) {
@@ -105,7 +107,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
     },
 
     unsubscribeFromNewMessages: () => {
-        const { socket } = useAuthStore.getState().socket;
+        const socket = useAuthStore.getState().socket;
         socket.off("newMessage")
     },
     // todo : optimize this one later
