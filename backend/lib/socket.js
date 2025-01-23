@@ -8,20 +8,19 @@ const app = express()
 const server = http.createServer(app);
 
 
-const corsOptions = {
-    origin: ["http://localhost:3000", "https://chat-app-frontend-ten-alpha.vercel.app"],
-    credentials: true,
-    optionsSuccessStatus: 200
-};
 
 
 const io = new Server(server, {
-    cors: corsOptions
+    cors: {
+        origin: ["http://localhost:3000", "https://chat-app-frontend-ten-alpha.vercel.app"],
+        credentials: true,
+        optionsSuccessStatus: 200
+    }
 });
 
 
 io.on("connection", (socket) => {
-    // console.log("a user connected", socket.id);
+    console.log("a user connected", socket.id);
 
     socket.on("disconnect", () => {
         // console.log("user disconnected", socket.id);

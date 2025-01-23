@@ -5,20 +5,14 @@ import cookieParser from "cookie-parser";
 import authRoute from "./routes/authRoute.js"
 import messageRoute from "./routes/messageRoute.js"
 import { app, server } from "./lib/socket.js"
-import cors from "cors";
+
+
 
 
 dotenv.config();
 
 
-const corsOptions = {
-    origin: ["http://localhost:3000", "https://chat-app-frontend-ten-alpha.vercel.app"],
-    credentials: true,
-    optionsSuccessStatus: 200
-};
 
-
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
