@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoute from "./routes/authRoute.js"
 import messageRoute from "./routes/messageRoute.js"
 import { app, server } from "./lib/socket.js"
+import cors from "cors";
 
 
 dotenv.config();
