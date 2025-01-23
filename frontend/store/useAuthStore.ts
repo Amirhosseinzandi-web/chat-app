@@ -35,7 +35,7 @@ type AuthStoreType = {
 
     connectSocket: () => void
 
-    disConnectSocket: () => void
+    disconnectSocket: () => void
 }
 
 
@@ -93,7 +93,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
 
             set({ authUser: null })
             toast.success("logout successfully");
-            get().disConnectSocket()
+            get().disconnectSocket()
 
         } catch (err) {
             toast.error("logout failed");
@@ -142,8 +142,11 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
 
         const socket = io(process.env.NEXT_PUBLIC_CHAT_APP_API_URL);
         socket.connect();
+        set({ socket })
     },
 
-    disConnectSocket: () => { },
+    disconnectSocket: () => {
+        if (get().socket?.connected) get().socket.disconnect()
+    },
 
 }))
