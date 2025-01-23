@@ -1,10 +1,10 @@
 "use client";
 
+import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
+import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
-import { Users } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
 
 
 
