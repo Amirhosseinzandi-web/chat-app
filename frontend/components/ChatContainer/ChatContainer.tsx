@@ -13,14 +13,19 @@ import MessageSkeleton from "../skeletons/MessageSkeleton";
 
 
 const ChatContainerComponent = () => {
-    const { messages, getMessages, isMessagesLoading, selectedUser } = useChatStore()
+    const { messages, getMessages, isMessagesLoading, selectedUser, subscribeToNewMessages, unsubscribeFromNewMessages } = useChatStore()
     const { authUser } = useAuthStore()
 
 
 
     useEffect(() => {
         if (selectedUser) getMessages(selectedUser._id)
-    }, [selectedUser, getMessages])
+        subscribeToNewMessages()
+
+        return () => unsubscribeFromNewMessages()
+
+    }, [selectedUser, getMessages, subscribeToNewMessages, unsubscribeFromNewMessages])
+
 
 
     // useEffect(() => {
@@ -52,7 +57,7 @@ const ChatContainerComponent = () => {
                 {
                     messages?.map((item, ind) => (
                         <div
-                            key={ind}
+                            key={item._id}
                             className={`chat ${item?.senderId === authUser?._id ? "chat-end" : "chat-start"}`}
                         >
                             <div className="chat-image avatar">

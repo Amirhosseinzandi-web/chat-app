@@ -1,6 +1,7 @@
+import { getReciverSocketId } from "../../lib/socket.js";
 import messageModel from "../../models/messageModel.js";
 import userModel from "../../models/userModel.js";
-
+import { } from "../../lib/socket.js";
 
 
 
@@ -55,11 +56,16 @@ export const sendMessage = async (req, res) => {
         const newMessage = await messageModel.create({
             senderId,
             receiverId,
-            text : text,
+            text: text,
             image: imageUrl
         })
 
         res.status(201).json(newMessage)
+
+        // real time chat
+        const receiverSocketid = getReciverSocketId(receiverId)
+
+        io.to(receiverSocketid).emit("newMessage", newMessage)
 
     } catch (err) {
         console.log(`error in sendMessage controller, error is ==> ${err}`);
