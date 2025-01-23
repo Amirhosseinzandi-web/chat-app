@@ -21,10 +21,10 @@ const io = new Server(server, {
 
 
 io.on("connection", (socket) => {
-    console.log("a user connected", socket.id);
+    // console.log("a user connected", socket.id);
 
     socket.on("disconnect", () => {
-        console.log("user disconnected", socket.id);
+        // console.log("user disconnected", socket.id);
     })
 
 })
