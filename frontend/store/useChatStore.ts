@@ -84,7 +84,8 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         try {
             const res = await axiosInstance.post(`/api/message/send/${selectedUser?._id}`, messageData);
             set({ messages: [...messages, res.data] })
-            console.log(res);
+            get().subscribeToNewMessages()
+            // console.log(res);
 
 
         } catch (error) {
@@ -95,14 +96,21 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         }
     },
     subscribeToNewMessages: () => {
-        const { selectedUser, messages } = get()
+        const { selectedUser } = get()
         if (!selectedUser) return
 
         const socket = useAuthStore.getState().socket;
+        if (!socket?.connected) {
+            console.log("Socket not connected!");
+        } else {
+            console.log("Socket connected :)");
 
-        // optimize this one later
+        }
         socket.on("newMessage", (newMessage: MessagesType) => {
-            set({ messages: [...messages, newMessage] })
+            // دریافت آخرین وضعیت messages
+            set({ messages: [...get().messages, newMessage] })
+            console.log(newMessage);
+
         })
     },
 
