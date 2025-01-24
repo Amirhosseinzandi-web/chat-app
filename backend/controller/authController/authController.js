@@ -72,10 +72,10 @@ export const logout = async (req, res) => {
         const currentToken = req.token
         await userModel.findOneAndUpdate({ _id: req.user._id }, { $pull: { tokens: { tokenKey: currentToken } } });
 
-        res.clearCookie('jwt', {
+        res.clearCookie("jwt", {
             httpOnly: true,
-            sameSite: 'None',
-            secure: process.env.NODE_ENV === 'production'
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
         });
 
         res.status(200).json({ message: "logout success" });

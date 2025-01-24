@@ -27,10 +27,14 @@ export const getReciverSocketId = (userId) => {
     return userSocketMap[userId]
 }
 
+export const getUserSocketMap = () => userSocketMap
+
 
 
 // used to store online users
 const userSocketMap = {}
+
+
 
 
 io.on("connection", (socket) => {
@@ -38,6 +42,8 @@ io.on("connection", (socket) => {
 
     const { userId } = socket.handshake.query;
     if (userId) userSocketMap[userId] = socket.id
+    // console.log("socket id ==>",socket.id);
+    
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap))
     // console.log(userSocketMap);

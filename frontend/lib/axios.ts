@@ -11,3 +11,14 @@ export const axiosInstance = axios.create({
     }
 })
 
+
+
+
+export const customInstance = axios.create({
+    baseURL: "http://localhost:5000",
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+})

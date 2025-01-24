@@ -50,11 +50,11 @@ userSchema.methods.generateAuthToken = async function (res) {
         this.tokens.push({ tokenKey: token })
         await this.save()
         res.cookie("jwt", token, {
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            httpOnly: true, // cookie is only accessible from the server not js
-            sameSite: 'None',
-            secure: process.env.NODE_ENV === 'production' // ensure you're using HTTPS
-        })
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // در تولید: true, در توسعه: false
+            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // در تولید: None, در توسعه: Lax
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
         return token
     }
     catch (err) {

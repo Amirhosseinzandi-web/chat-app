@@ -1,4 +1,4 @@
-import { axiosInstance } from "@/lib/axios";
+import { axiosInstance, customInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -73,6 +73,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         }
         catch (error) {
             console.log("error in use chat store , get messages , error is ==> ", error);
+            toast.error("something went wrong");
         }
         finally {
             set({ isMessagesLoading: false })
@@ -84,7 +85,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         try {
             const res = await axiosInstance.post(`/api/message/send/${selectedUser?._id}`, messageData);
             set({ messages: [...messages, res.data] })
-            get().subscribeToNewMessages()
+            // get().subscribeToNewMessages()
             // console.log(res);
 
 
@@ -96,27 +97,26 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         }
     },
     subscribeToNewMessages: () => {
-        const { selectedUser } = get()
-        if (!selectedUser) return
+        const { selectedUser } = get();
+        if (!selectedUser) return;
 
         const socket = useAuthStore.getState().socket;
-        if (!socket?.connected) {
-            console.log("Socket not connected!");
-        } else {
-            console.log("Socket connected :)");
+        if (!socket) return;
 
-        }
-        socket.on("newMessage", (newMessage: MessagesType) => {
-            // دریافت آخرین وضعیت messages
-            set({ messages: [...get().messages, newMessage] })
-            console.log(newMessage);
 
-        })
+        const handler = (newMessage: MessagesType) => {
+            set((state) => ({ messages: [...state.messages, newMessage] }));
+        };
+
+        socket.on("newMessage", handler);
     },
+
 
     unsubscribeFromNewMessages: () => {
         const socket = useAuthStore.getState().socket;
-        socket.off("newMessage")
+        if (socket) {
+            socket.off("newMessage");
+        }
     },
     // todo : optimize this one later
     setSelectedUser: (selectedUser) => set({ selectedUser }),

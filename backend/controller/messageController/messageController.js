@@ -1,6 +1,6 @@
 import messageModel from "../../models/messageModel.js";
 import userModel from "../../models/userModel.js";
-import { io, getReciverSocketId } from "../../lib/socket.js";
+import { io, getReciverSocketId, getUserSocketMap } from "../../lib/socket.js";
 
 
 
@@ -63,8 +63,17 @@ export const sendMessage = async (req, res) => {
 
         // real time chat
         const receiverSocketid = getReciverSocketId(receiverId)
+        const usersSocketMap = getUserSocketMap()
+        // console.log("receiverSocketid ==>", receiverSocketid);
+        // console.log("usersSocketMap ==>", usersSocketMap);
+        // console.log("receiverId ==>", receiverId);
+        // console.log("senderId ==>", senderId);
 
-        io.to(receiverSocketid).emit("newMessage", newMessage)
+
+        if (receiverSocketid) {
+            io.to(receiverSocketid).emit("newMessage", newMessage)
+            // console.log("Emitting new message to receiver:", receiverSocketid);
+        }
 
     } catch (err) {
         console.log(`error in sendMessage controller, error is ==> ${err}`);

@@ -3,7 +3,7 @@
 import { formatMessageTime } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import ChatHeader from "../ChatHeader/ChatHeader";
 import MessageInput from "../MessageInput/MessageInput";
 import MessageSkeleton from "../skeletons/MessageSkeleton";
@@ -14,18 +14,35 @@ import MessageSkeleton from "../skeletons/MessageSkeleton";
 
 const ChatContainerComponent = () => {
     const { messages, getMessages, isMessagesLoading, selectedUser, subscribeToNewMessages, unsubscribeFromNewMessages } = useChatStore()
+
     const { authUser } = useAuthStore()
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+
+    useEffect(() => {
+        if (selectedUser) {
+            getMessages(selectedUser._id);
+            subscribeToNewMessages();
+        }
+
+        return () => {
+            unsubscribeFromNewMessages();
+        };
+    }, [selectedUser]);
+
 
 
 
     useEffect(() => {
-        if (selectedUser) getMessages(selectedUser._id)
-        subscribeToNewMessages()
-
-        return () => unsubscribeFromNewMessages()
-
-    }, [selectedUser, getMessages, subscribeToNewMessages, unsubscribeFromNewMessages])
-
+        const scrollToBottom = () => {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        };
+        if (messages) {
+            scrollToBottom();
+        }
+    }, [messages]);
 
 
     // useEffect(() => {
@@ -57,7 +74,7 @@ const ChatContainerComponent = () => {
                 {
                     messages?.map((item, ind) => (
                         <div
-                            key={item._id}
+                            key={ind}
                             className={`chat ${item?.senderId === authUser?._id ? "chat-end" : "chat-start"}`}
                         >
                             <div className="chat-image avatar">
@@ -88,6 +105,7 @@ const ChatContainerComponent = () => {
                         </div>
                     ))
                 }
+                <div ref={messagesEndRef} />
             </div>
 
             <MessageInput />

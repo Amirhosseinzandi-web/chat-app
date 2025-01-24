@@ -13,6 +13,7 @@ const MessageInput = () => {
     const [text, setText] = useState("")
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const inputTextRef = useRef<HTMLInputElement | null>(null);
 
 
     const { sendMessage, messages, isMessagesLoading, isSendingMessage } = useChatStore();
@@ -79,6 +80,12 @@ const MessageInput = () => {
     }
 
 
+    useEffect(() => {
+        if (!inputTextRef.current) return;
+        inputTextRef.current.focus();
+    }, [messages])
+
+
     return (
         <div className="p-4 w-full">
             {imagePreview && (
@@ -110,6 +117,7 @@ const MessageInput = () => {
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         disabled={isMessagesLoading}
+                        ref={inputTextRef}
                     />
                     <input
                         type="file"
