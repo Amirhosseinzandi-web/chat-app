@@ -15,7 +15,8 @@ dotenv.config();
 const corsOptions = {
     origin: ["http://localhost:3000", "https://chat-app-frontend-ten-alpha.vercel.app"],
     credentials: true,
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
+    allowedHeaders: ["Content-Type", "Authorization"]
 };
 
 
