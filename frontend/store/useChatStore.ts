@@ -27,7 +27,7 @@ type MessagesType = {
 
 type ChatStoreType = {
     messages: MessagesType[]
-    users: any,
+    users: UsersType[],
     selectedUser: null | UsersType
     isUsersLoading: boolean
     isMessagesLoading: boolean
@@ -105,6 +105,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
 
 
         const handler = (newMessage: MessagesType) => {
+            if (newMessage.senderId !== selectedUser._id) return
             set((state) => ({ messages: [...state.messages, newMessage] }));
         };
 
@@ -114,10 +115,9 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
 
     unsubscribeFromNewMessages: () => {
         const socket = useAuthStore.getState().socket;
-        if (socket) {
-            socket.off("newMessage");
-        }
+        if (!socket) return
+        socket.off("newMessage");
     },
-    // todo : optimize this one later
+
     setSelectedUser: (selectedUser) => set({ selectedUser }),
 }))

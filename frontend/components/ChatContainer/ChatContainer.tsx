@@ -39,7 +39,7 @@ const ChatContainerComponent = () => {
                 messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             }, 100);
         };
-        if (messages) {
+        if (messagesEndRef.current && messages) {
             scrollToBottom();
         }
     }, [messages]);

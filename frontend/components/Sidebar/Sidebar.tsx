@@ -7,16 +7,22 @@ import { useEffect, useState } from "react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 
 
+type UsersType = {
+    _id: string
+    email: string
+    password: string
+    profilePic: string
+    fullName: string
+    tokens: [{ tokenKey: string, time: string }]
+}
+
+
 
 const SidebarComponent = () => {
     const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore()
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
     const { onlineUsers } = useAuthStore();
 
-    // const onlineUsers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'];
-    // const filteredUsers = showOnlineOnly
-    //     ? users.filter((user) => onlineUsers.includes(user._id))
-    //     : users;
 
 
     useEffect(() => {
@@ -25,15 +31,11 @@ const SidebarComponent = () => {
     }, [getUsers])
 
 
-    // useEffect(() => {
-    //     console.log("online users ==>", onlineUsers);
-    //     console.log("users ==>", users);
+    const filteredUsers = showOnlineOnly ? users.filter((user: UsersType) => onlineUsers.includes(user._id)) : users
 
-    // }, [onlineUsers, users])
 
 
     if (isUsersLoading) return <SidebarSkeleton />
-
 
     return (
         <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
@@ -53,12 +55,12 @@ const SidebarComponent = () => {
                         />
                         <span className="text-sm">Show online only</span>
                     </label>
-                    {/* <span className="text-xs text-zinc-500">({onlineUsers.length - 1} online)</span> */}
+                    <span className="text-xs text-zinc-500">({onlineUsers.length - 1} online)</span>
                 </div>
             </div>
 
             <div className="overflow-y-auto w-full py-3">
-                {users.map((user: any) => (
+                {filteredUsers.map((user: any) => (
                     <button
                         key={user._id}
                         onClick={() => setSelectedUser(user)}
@@ -92,9 +94,9 @@ const SidebarComponent = () => {
                     </button>
                 ))}
 
-                {/* {filteredUsers.length === 0 && (
+                {filteredUsers.length === 0 && (
                     <div className="text-center text-zinc-500 py-4">No online users</div>
-                )} */}
+                )}
             </div>
         </aside>
     );
