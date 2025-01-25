@@ -141,7 +141,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
         const { authUser, socket } = get();
         if (!authUser || socket?.connected) return;
 
-        const socketUrl = "http://localhost:5000";
+        const socketUrl = process.env.NEXT_PUBLIC_CHAT_APP_API_URL;
 
         const newSocket = io(socketUrl, {
             transports: ['websocket', 'polling'],
