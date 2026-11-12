@@ -1,5 +1,5 @@
+import "dotenv/config";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import express from "express";
 import connectToDatabase from "./lib/db.js";
 import { app, server } from "./lib/socket.js";
@@ -9,7 +9,7 @@ import cors from "cors";
 
 
 
-dotenv.config();
+
 
 
 const corsOptions = {
