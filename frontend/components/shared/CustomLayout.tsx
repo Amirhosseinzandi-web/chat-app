@@ -8,7 +8,7 @@ import { Toaster } from "react-hot-toast";
 
 
 const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const { isCheckingAuth, checkAuth, onlineUsers } = useAuthStore()
+    const { isCheckingAuth, checkAuth } = useAuthStore()
     const { theme } = useThemeStore()
 
 

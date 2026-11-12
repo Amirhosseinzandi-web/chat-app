@@ -60,7 +60,7 @@ const SidebarComponent = () => {
             </div>
 
             <div className="overflow-y-auto w-full py-3">
-                {filteredUsers.map((user: any) => (
+                {filteredUsers.map((user: UsersType) => (
                     <button
                         key={user._id}
                         onClick={() => setSelectedUser(user)}
@@ -73,7 +73,7 @@ const SidebarComponent = () => {
                         <div className="relative mx-auto lg:mx-0">
                             <img
                                 src={user.profilePic || "/avatar.png"}
-                                alt={user.name}
+                                alt={user.fullName}
                                 className="size-12 object-cover rounded-full"
                             />
                             {onlineUsers.includes(user._id) && (

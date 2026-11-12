@@ -2,7 +2,6 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 
 
 
