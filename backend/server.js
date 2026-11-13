@@ -5,6 +5,7 @@ import connectToDatabase from "./lib/db.js";
 import { app, server } from "./lib/socket.js";
 import authRoute from "./routes/authRoute.js";
 import messageRoute from "./routes/messageRoute.js";
+import adminRoute from "./routes/adminRoute.js";
 import cors from "cors";
 
 
@@ -31,6 +32,7 @@ connectToDatabase();
 
 app.use("/api/auth", authRoute)
 app.use("/api/message", messageRoute)
+app.use("/api/admin", adminRoute)
 
 
 

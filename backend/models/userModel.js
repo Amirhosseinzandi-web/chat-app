@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: ""
         },
+        role: {
+            type: String,
+            enum: ["user", "admin"],
+            default: "user"
+        },
         tokens: [
             { tokenKey: String, time: { type: Date, default: Date.now } }
         ]
