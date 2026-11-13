@@ -11,7 +11,10 @@ import type { UsersType } from "@/store/useChatStore";
 const SidebarComponent = () => {
     const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore()
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-    const { onlineUsers } = useAuthStore();
+    const { onlineUsers, authUser } = useAuthStore();
+
+    // the list includes ourselves; count only OTHER online users
+    const otherOnlineCount = onlineUsers.filter((id) => id !== authUser?._id).length;
 
 
     useEffect(() => {
@@ -43,7 +46,9 @@ const SidebarComponent = () => {
                         />
                         <span className="text-sm">Show online only</span>
                     </label>
-                    <span className="text-xs text-zinc-500">({onlineUsers.length} online)</span>
+                    <span className="text-xs text-zinc-500">
+                        ({otherOnlineCount} {otherOnlineCount === 1 ? "user" : "users"} online)
+                    </span>
                 </div>
             </div>
 
@@ -83,7 +88,9 @@ const SidebarComponent = () => {
                 ))}
 
                 {filteredUsers.length === 0 && (
-                    <div className="text-center text-zinc-500 py-4">No online users</div>
+                    <div className="text-center text-zinc-500 py-4">
+                        {users.length === 0 ? "No contacts yet" : showOnlineOnly ? "No users online" : "No contacts found"}
+                    </div>
                 )}
             </div>
         </aside>
