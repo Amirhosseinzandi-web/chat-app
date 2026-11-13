@@ -54,6 +54,44 @@ const HomeComponent = () => {
         }
     }, [authUser]);
 
+    // warm start: app is already open and a notification was clicked
+    // (the service worker postMessages the conversation id to this window)
+    useEffect(() => {
+        if (!authUser || typeof window === "undefined") return;
+        const tryOpenChat = (cid: string): boolean => {
+            const { users, setSelectedUser } = useChatStore.getState();
+            let target = null;
+            if (cid === authUser._id) {
+                target = {
+                    _id: authUser._id,
+                    email: authUser.email,
+                    profilePic: authUser.profilePic || "",
+                    fullName: "Saved Messages",
+                };
+            } else if (users.length > 0) {
+                target = users.find((u) => u._id === cid) || null;
+            }
+            if (!target) return false; // contact list not loaded yet
+            if (useChatStore.getState().selectedUser?._id !== cid) setSelectedUser(target);
+            return true;
+        };
+        const openChat = (cid: string) => {
+            // retry briefly: the contact list may still be loading
+            let attempts = 0;
+            const step = () => {
+                if (tryOpenChat(cid)) return;
+                if (++attempts >= 20) return;
+                window.setTimeout(step, 500);
+            };
+            step();
+        };
+        const onMsg = (e: MessageEvent) => {
+            if (e.data && e.data.type === "CHATTY_OPEN_CHAT") openChat(e.data.conversationId);
+        };
+        window.addEventListener("message", onMsg);
+        return () => window.removeEventListener("message", onMsg);
+    }, [authUser]);
+
     if (isCheckingAuth || !authUser) {
         return (
             <div className="h-[100dvh] flex items-center justify-center bg-base-200">

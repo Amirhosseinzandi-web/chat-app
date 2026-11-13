@@ -43,8 +43,14 @@ self.addEventListener("notificationclick", (event) => {
     event.waitUntil(
         self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
             for (const w of wins) {
-                if ("focus" in w) { w.focus(); w.navigate(url); return; }
+                if ("focus" in w) {
+                    w.focus();
+                    // app is already open: tell it directly (no reload)
+                    if (conversationId) w.postMessage({ type: "CHATTY_OPEN_CHAT", conversationId });
+                    return;
+                }
             }
+            // app is closed: open a new window with the deep link
             return self.clients.openWindow(url);
         })
     );
@@ -86,6 +92,11 @@ self.addEventListener("fetch", (event) => {
                 }
                 return res;
             })
-            .catch(() => (req.mode === "navigate" ? caches.match(req) : caches.match(req)))
+            .catch(() => {
+                if (req.mode === "navigate") {
+                    return caches.match(req).then((hit) => hit || caches.match("/"));
+                }
+                return Response.error();
+            })
     );
 });

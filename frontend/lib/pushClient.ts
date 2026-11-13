@@ -28,22 +28,28 @@ export const enablePushNotifications = async (): Promise<boolean> => {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return false;
 
-    const registration = await navigator.serviceWorker.ready;
+    try {
+        const registration = await navigator.serviceWorker.ready;
 
-    // VAPID public key from the backend (rotation without a rebuild)
-    const { axiosInstance } = await import("@/lib/axios");
-    const { data } = await axiosInstance.get<{ publicKey: string }>("/api/push/public-key");
+        // VAPID public key from the backend (rotation without a rebuild)
+        const { axiosInstance } = await import("@/lib/axios");
+        const { data } = await axiosInstance.get<{ publicKey: string }>("/api/push/public-key");
 
-    let subscription = await registration.pushManager.getSubscription();
-    if (!subscription) {
-        subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(data.publicKey),
-        });
+        let subscription = await registration.pushManager.getSubscription();
+        if (!subscription) {
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(data.publicKey),
+            });
+        }
+
+        await axiosInstance.post("/api/push/subscribe", subscription.toJSON());
+        return true;
+    } catch (err) {
+        // e.g. iOS Safari not installed yet (push needs an installed PWA on iOS)
+        console.log("push subscribe failed:", err);
+        return false;
     }
-
-    await axiosInstance.post("/api/push/subscribe", subscription.toJSON());
-    return true;
 };
 
 export const disablePushNotifications = async (): Promise<boolean> => {
