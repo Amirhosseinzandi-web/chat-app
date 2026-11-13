@@ -2,6 +2,7 @@ import messageModel from "../../models/messageModel.js";
 import userModel from "../../models/userModel.js";
 import mongoose from "mongoose";
 import { io, getReciverSocketId, getUserSocketMap } from "../../lib/socket.js";
+import { pushMessageIfOffline } from "../pushController/pushController.js";
 
 
 
@@ -58,8 +59,8 @@ export const sendMessage = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(receiverId)) {
             return res.status(400).json({ message: "invalid receiver id" });
         }
-        const receiverExists = await userModel.exists({ _id: receiverId });
-        if (!receiverExists) {
+        const receiver = await userModel.findById(receiverId).select("_id notificationsEnabled mutedChats");
+        if (!receiver) {
             return res.status(404).json({ message: "receiver not found" });
         }
         if (text && typeof text !== "string") {
@@ -92,8 +93,14 @@ export const sendMessage = async (req, res) => {
 
 
         if (receiverSocketid) {
+            // receiver is online -> real-time socket delivery
             io.to(receiverSocketid).emit("newMessage", newMessage)
-            // console.log("Emitting new message to receiver:", receiverSocketid);
+        } else {
+            // receiver is OFFLINE -> web push notification to all their devices
+            // (honors app-level and per-chat mute; fire-and-forget)
+            pushMessageIfOffline(receiver, newMessage).catch((e) =>
+                console.log("offline push failed:", e.message)
+            );
         }
 
     } catch (err) {

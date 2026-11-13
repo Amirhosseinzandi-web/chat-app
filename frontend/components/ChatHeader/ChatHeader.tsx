@@ -2,7 +2,8 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
-import { ArrowLeft, Bookmark, X } from "lucide-react";
+import { ArrowLeft, Bookmark, Bell, BellOff, X } from "lucide-react";
+import { usePushStore } from "@/store/usePushStore";
 
 
 type Props = {
@@ -13,8 +14,10 @@ type Props = {
 const ChatHeader = ({ onOpenProfile }: Props) => {
     const { selectedUser, setSelectedUser } = useChatStore();
     const { onlineUsers, authUser } = useAuthStore();
+    const { mutedChats, toggleChatMute } = usePushStore();
 
     const isSaved = !!selectedUser && selectedUser._id === authUser?._id;
+    const isMuted = !!selectedUser && !isSaved && !!mutedChats[selectedUser._id];
     const isOnline = !!selectedUser?._id && !isSaved && onlineUsers.includes(selectedUser._id);
 
     const statusClass = isSaved ? "text-base-content/60" : isOnline ? "text-primary" : "text-base-content/70";
@@ -60,14 +63,28 @@ const ChatHeader = ({ onOpenProfile }: Props) => {
                     </div>
                 </div>
 
-                {/* Close button - desktop only */}
-                <button
-                    className="hidden lg:flex btn btn-ghost btn-circle btn-sm"
-                    onClick={() => setSelectedUser(null)}
-                    aria-label="Close chat"
-                >
-                    <X className="size-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                    {/* Per-chat mute bell - hidden for Saved Messages */}
+                    {!isSaved && selectedUser && (
+                        <button
+                            className={"btn btn-ghost btn-circle btn-sm shrink-0 " + (isMuted ? "text-warning" : "")}
+                            onClick={() => toggleChatMute(selectedUser._id)}
+                            aria-label={isMuted ? "Unmute notifications" : "Mute notifications"}
+                            title={isMuted ? "Unmute" : "Mute"}
+                        >
+                            {isMuted ? <BellOff className="size-5" /> : <Bell className="size-5" />}
+                        </button>
+                    )}
+
+                    {/* Close button - desktop only */}
+                    <button
+                        className="hidden lg:flex btn btn-ghost btn-circle btn-sm"
+                        onClick={() => setSelectedUser(null)}
+                        aria-label="Close chat"
+                    >
+                        <X className="size-5" />
+                    </button>
+                </div>
             </div>
         </div>
     );

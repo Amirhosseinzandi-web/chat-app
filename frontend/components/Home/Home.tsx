@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import ChatContainerComponent from "@/components/ChatContainer/ChatContainer";
 import NoChatSelectedComponent from "@/components/NoChatSelected/NoChatSelected";
 import SidebarComponent from "@/components/Sidebar/Sidebar";
@@ -12,6 +13,46 @@ const HomeComponent = () => {
     // auth guard: redirects to /login when there is no user (checkAuth runs in CustomLayout)
     const { authUser, isCheckingAuth } = useRequireAuth();
     const { selectedUser } = useChatStore();
+
+    // notification deep-link: opening the app from a push notification
+    // (sw.js navigates to /?cid=<conversationId>) selects that conversation
+    useEffect(() => {
+        if (!authUser || typeof window === "undefined") return;
+        const cid = new URLSearchParams(window.location.search).get("cid");
+        if (!cid) return;
+
+        const tryOpen = (): boolean => {
+            const { users, setSelectedUser } = useChatStore.getState();
+            let target = null;
+            if (cid === authUser._id) {
+                // Saved Messages (the sidebar builds this entry locally)
+                target = {
+                    _id: authUser._id,
+                    email: authUser.email,
+                    profilePic: authUser.profilePic || "",
+                    fullName: "Saved Messages",
+                };
+            } else if (users.length > 0) {
+                target = users.find((u) => u._id === cid) || null;
+            }
+            if (!target) return false;
+            if (useChatStore.getState().selectedUser?._id !== cid) {
+                setSelectedUser(target);
+            }
+            // clean the url so a refresh does not force the chat open
+            window.history.replaceState(null, "", window.location.pathname);
+            return true;
+        };
+
+        if (!tryOpen()) {
+            // users are still loading (the sidebar fetches them) - retry briefly
+            const iv = window.setInterval(() => {
+                if (tryOpen()) window.clearInterval(iv);
+            }, 400);
+            window.setTimeout(() => window.clearInterval(iv), 10000);
+            return () => window.clearInterval(iv);
+        }
+    }, [authUser]);
 
     if (isCheckingAuth || !authUser) {
         return (

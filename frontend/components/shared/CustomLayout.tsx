@@ -4,7 +4,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useThemeStore } from "@/store/useThemeStore";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
-
+import { setupInstallPrompt, setupResubscribeListener, detectInstalledState } from "@/lib/pushClient";
 
 
 const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
@@ -16,11 +16,25 @@ const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
         checkAuth();
     }, [])
 
+    // PWA: register the service worker (needed for notifications) + install prompt
+    useEffect(() => {
+        detectInstalledState();
+        setupInstallPrompt();
+        setupResubscribeListener();
 
-    // useEffect(() => {
-    //     console.log(onlineUsers);
-
-    // }, [onlineUsers])
+        if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+            const registerSW = async () => {
+                try {
+                    await navigator.serviceWorker.register("/sw.js");
+                } catch (err) {
+                    // SW registration failed (e.g. non-secure context) - the app
+                    // still works, just without push notifications
+                    console.log("service worker registration failed:", err);
+                }
+            };
+            registerSW();
+        }
+    }, [])
 
 
     if (isCheckingAuth) {

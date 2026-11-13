@@ -3,6 +3,7 @@ import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
 import { getAuthToken, setAuthToken } from "@/lib/authToken";
+import { syncPushStoreFromAuthUser } from "@/store/usePushStore";
 
 
 type User = {
@@ -12,6 +13,9 @@ type User = {
     email: string;
     createdAt: string;
     role?: "user" | "admin";
+    // push preferences (backend defaults: notifications on, no muted chats)
+    notificationsEnabled?: boolean;
+    mutedChats?: Record<string, boolean>;
 };
 
 
@@ -59,6 +63,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
             const res = await axiosInstance.get("/api/auth/check");
 
             set({ authUser: res.data })
+            syncPushStoreFromAuthUser()
             get().connectSocket()
 
         } catch (err) {
@@ -80,6 +85,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
             setAuthToken(res.data.token);
 
             set({ authUser: res.data })
+            syncPushStoreFromAuthUser()
             toast.success("user created successfully");
             get().connectSocket()
         } catch (err) {
@@ -115,6 +121,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
             setAuthToken(res.data.token);
 
             set({ authUser: res.data })
+            syncPushStoreFromAuthUser()
             toast.success("login successfully");
             get().connectSocket()
 

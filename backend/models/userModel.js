@@ -30,6 +30,17 @@ const userSchema = new mongoose.Schema(
             enum: ["user", "admin"],
             default: "user"
         },
+        // notifications: false = no push at all (the app-level mute, like Telegram)
+        notificationsEnabled: {
+            type: Boolean,
+            default: true
+        },
+        // chats muted one-by-one, e.g. { "<otherUser's id>": true }
+        mutedChats: {
+            type: Map,
+            of: Boolean,
+            default: {}
+        },
         tokens: [
             { tokenKey: String, time: { type: Date, default: Date.now } }
         ]
