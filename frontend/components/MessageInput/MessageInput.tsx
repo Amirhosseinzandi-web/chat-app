@@ -93,7 +93,7 @@ const MessageInput = () => {
                     <div className="relative">
                         <img
                             src={imagePreview}
-                            alt="Preview"
+                            alt="Selected image preview"
                             className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
                         />
                         <button
@@ -129,7 +129,8 @@ const MessageInput = () => {
 
                     <button
                         type="button"
-                        className={`flex btn btn-circle
+                        aria-label="Attach an image"
+                        className={`flex btn btn-circle btn-sm sm:btn-md
                          ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
                         onClick={() => fileInputRef.current?.click()}
                     >
