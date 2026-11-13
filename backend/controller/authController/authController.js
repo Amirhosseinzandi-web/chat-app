@@ -18,9 +18,10 @@ export const signUp = async (req, res) => {
         const user = await userModel.create(userData);
         if (user) {
             // generate auth token
-            await user.generateAuthToken(res);
+            const token = await user.generateAuthToken(res);
 
             res.status(201).json({
+                token,
                 _id: user._id,
                 fullName: user.fullName,
                 email: user.email,
@@ -51,8 +52,9 @@ export const login = async (req, res) => {
         if (!isPasswordMatch) {
             return res.status(400).json({ message: "Invalid password" });
         }
-        await currentUser.generateAuthToken(res);
+        const token = await currentUser.generateAuthToken(res);
         res.status(200).json({
+            token,
             _id: currentUser._id,
             fullName: currentUser.fullName,
             email: currentUser.email,
@@ -101,7 +103,11 @@ export const updateProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "user not found" });
         }
-        const updatedUser = await userModel.findByIdAndUpdate(userId, { profilePic: profilePicAddres }, { new: true });
+        const updatedUser = await userModel.findByIdAndUpdate(
+            userId,
+            { profilePic: profilePicAddres },
+            { new: true, select: "_id fullName email profilePic createdAt" }
+        );
         res.status(200).json(updatedUser);
 
     } catch (err) {
@@ -114,11 +120,11 @@ export const updateProfile = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const allUsers = await userModel.find({})
+        const allUsers = await userModel.find({}).select("_id fullName email profilePic createdAt")
         res.json(allUsers)
     } catch (err) {
         console.log("error in get all users, error is ==>", err);
-        return res.status(404)
+        return res.status(500).json({ message: "server-error" })
     }
 }
 

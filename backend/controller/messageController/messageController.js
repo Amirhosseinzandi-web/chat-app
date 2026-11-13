@@ -1,5 +1,6 @@
 import messageModel from "../../models/messageModel.js";
 import userModel from "../../models/userModel.js";
+import mongoose from "mongoose";
 import { io, getReciverSocketId, getUserSocketMap } from "../../lib/socket.js";
 
 
@@ -31,7 +32,7 @@ export const getMessages = async (req, res) => {
                 { senderId: myId, receiverId: userToChatId },
                 { senderId: userToChatId, receiverId: myId }
             ]
-        })
+        }).sort({ createdAt: 1 })
 
         res.status(200).json(messages)
 
@@ -50,6 +51,24 @@ export const sendMessage = async (req, res) => {
         const { text, imageUrl } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
+
+        // validation: receiver must be a valid user id and exist; text must have a sane length
+        if (!mongoose.Types.ObjectId.isValid(receiverId)) {
+            return res.status(400).json({ message: "invalid receiver id" });
+        }
+        const receiverExists = await userModel.exists({ _id: receiverId });
+        if (!receiverExists) {
+            return res.status(404).json({ message: "receiver not found" });
+        }
+        if (text && typeof text !== "string") {
+            return res.status(400).json({ message: "invalid text" });
+        }
+        if (text && text.length > 2000) {
+            return res.status(400).json({ message: "text too long" });
+        }
+        if (!text && !imageUrl) {
+            return res.status(400).json({ message: "message is empty" });
+        }
 
 
         const newMessage = await messageModel.create({

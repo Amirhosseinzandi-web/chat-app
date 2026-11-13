@@ -6,7 +6,7 @@ import { protectRoute } from '../middlewares/protectRoute.js';
 const router = express.Router();
 
 
-router.get("/get-users", getAllUsers)
+router.get("/get-users", protectRoute, getAllUsers)
 router.post("/signup", signUp)
 router.post("/login", login)
 router.delete("/logout", protectRoute, logout)
