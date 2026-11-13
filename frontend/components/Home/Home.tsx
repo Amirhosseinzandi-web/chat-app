@@ -3,39 +3,43 @@
 import ChatContainerComponent from "@/components/ChatContainer/ChatContainer";
 import NoChatSelectedComponent from "@/components/NoChatSelected/NoChatSelected";
 import SidebarComponent from "@/components/Sidebar/Sidebar";
-import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/useChatStore";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 
 
 const HomeComponent = () => {
-    // checkAuth is handled once in CustomLayout; this page only reacts to the result
-    const { authUser, isCheckingAuth } = useAuthStore()
-    const { selectedUser } = useChatStore()
-    const router = useRouter();
+    // auth guard: redirects to /login when there is no user (checkAuth runs in CustomLayout)
+    const { authUser, isCheckingAuth } = useRequireAuth();
+    const { selectedUser } = useChatStore();
 
-
-    useEffect(() => {
-        if (!isCheckingAuth) {
-            if (authUser) {
-                router.push("/")
-            } else {
-                router.push("/login")
-            }
-        }
-    }, [authUser, isCheckingAuth, router])
+    if (isCheckingAuth || !authUser) {
+        return (
+            <div className="h-[100dvh] flex items-center justify-center bg-base-200">
+                <span className="loading loading-ring loading-lg"></span>
+            </div>
+        );
+    }
 
     return (
-        <div className="h-screen bg-base-200">
-            <div className="flex items-center justify-center pt-20 px-4">
-                <div className="bg-base-100 rounded-lg shadow-cl w-full max-w-6xl h-[calc(100dvh-8rem)]">
-                    <div className="flex h-full rounded-lg overflow-hidden">
-                        <SidebarComponent />
+        <div className="h-[100dvh] bg-base-200">
+            <div className="flex items-center justify-center pt-16 px-0 sm:px-4 h-full">
+                <div className="bg-base-100 shadow-cl w-full sm:max-w-6xl sm:rounded-lg h-full sm:h-[calc(100dvh-8rem)]">
+                    <div className="flex h-full sm:rounded-lg overflow-hidden">
+                        {/* mobile: show list when no chat selected, chat when selected. desktop: always show sidebar */}
+                        <div className={selectedUser ? "hidden lg:flex w-full lg:w-auto" : "flex w-full lg:w-auto"}>
+                            <SidebarComponent />
+                        </div>
 
-                        {selectedUser ? <ChatContainerComponent /> : <NoChatSelectedComponent />}
-
+                        {selectedUser ? (
+                            <div className="flex-1 flex w-full lg:w-auto">
+                                <ChatContainerComponent />
+                            </div>
+                        ) : (
+                            <div className="hidden lg:flex flex-1">
+                                <NoChatSelectedComponent />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

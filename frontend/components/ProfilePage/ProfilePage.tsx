@@ -1,25 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Camera, Mail, User } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useRouter } from "next/navigation";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import imageCompression from "browser-image-compression";
 
 const ProfilePageComponent = () => {
-    const { authUser, isUpdatingProfile, updateProfile, isCheckingAuth } = useAuthStore();
+    const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+    // auth guard: redirects to /login when there is no user
+    const { isCheckingAuth } = useRequireAuth();
     const [selectedImg, setSelectedImg] = useState<string | null>(null);
-    const router = useRouter();
 
-
-
-    useEffect(() => {
-        if (!isCheckingAuth) {
-            if (!authUser) {
-                router.push("/login")
-            }
-        }
-    }, [authUser, isCheckingAuth])
+    if (isCheckingAuth || !authUser) {
+        return (
+            <div className="min-h-[100dvh] flex items-center justify-center bg-base-200">
+                <span className="loading loading-ring loading-lg"></span>
+            </div>
+        );
+    }
 
 
 
