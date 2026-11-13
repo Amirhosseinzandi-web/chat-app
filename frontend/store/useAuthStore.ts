@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
+import { getAuthToken, setAuthToken } from "@/lib/authToken";
 
 
 type User = {
@@ -50,7 +51,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
     isCheckingAuth: true,
     onlineUsers: [],
     socket: null,
-    authToken: null,
+    authToken: getAuthToken(),
 
 
     checkAuth: async () => {
@@ -76,6 +77,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
         try {
             const res = await axiosInstance.post("/api/auth/signup", data);
             set({ authToken: res.data.token });
+            setAuthToken(res.data.token);
 
             set({ authUser: res.data })
             toast.success("user created successfully");
@@ -97,6 +99,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
 
             get().disconnectSocket()
             set({ authUser: null, authToken: null })
+            setAuthToken(null);
             toast.success("logout successfully");
 
         } catch (err) {
@@ -109,6 +112,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
         try {
             const res = await axiosInstance.post("/api/auth/login", data);
             set({ authToken: res.data.token });
+            setAuthToken(res.data.token);
 
             set({ authUser: res.data })
             toast.success("login successfully");
