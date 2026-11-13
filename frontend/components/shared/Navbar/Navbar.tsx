@@ -1,6 +1,6 @@
 "use client"
 import { useAuthStore } from "@/store/useAuthStore";
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { LogOut, MessageSquare, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
 
 
@@ -40,6 +40,12 @@ const Navbar = () => {
 
                         {authUser && (
                             <div className="flex gap-2">
+                                {authUser.role === "admin" && (
+                                    <Link href="/admin" className="btn btn-sm gap-2" aria-label="Admin panel">
+                                        <Shield className="size-4" />
+                                        <span className="hidden sm:inline">Admin</span>
+                                    </Link>
+                                )}
                                 <Link href="/profile-page" className="btn btn-sm gap-2">
                                     <User className="size-5" />
                                     <span className="hidden sm:inline">Profile</span>
