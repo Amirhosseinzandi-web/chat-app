@@ -1,17 +1,16 @@
-import { axiosInstance, customInstance } from "@/lib/axios";
+import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 import { useAuthStore } from "@/store/useAuthStore";
 
 
 
-type UsersType = {
+export type UsersType = {
     _id: string
     email: string
-    password: string
     profilePic: string
     fullName: string
-    tokens: [{ tokenKey: string, time: string }]
+    createdAt?: string
 }
 
 type MessagesType = {
@@ -27,7 +26,7 @@ type MessagesType = {
 
 type ChatStoreType = {
     messages: MessagesType[]
-    users: UsersType[],
+    users: UsersType[]
     selectedUser: null | UsersType
     isUsersLoading: boolean
     isMessagesLoading: boolean
@@ -40,6 +39,19 @@ type ChatStoreType = {
     unsubscribeFromNewMessages: () => void
     sendMessage: (messageData: {}) => Promise<void>
 }
+
+
+
+// merge two message lists, dedupe by _id, sort by createdAt ascending
+const mergeMessages = (a: MessagesType[], b: MessagesType[]): MessagesType[] => {
+    const map = new Map<string, MessagesType>();
+    for (const m of [...a, ...b]) {
+        if (m && m._id) map.set(m._id, m);
+    }
+    return [...map.values()].sort(
+        (x, y) => new Date(x.createdAt).getTime() - new Date(y.createdAt).getTime()
+    );
+};
 
 
 
@@ -69,7 +81,8 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         set({ isMessagesLoading: true })
         try {
             const res = await axiosInstance.get(`/api/message/${userId}`);
-            set({ messages: res.data })
+            // merge instead of replace so messages arriving during the fetch are not lost
+            set({ messages: mergeMessages(get().messages, res.data) })
         }
         catch (error) {
             console.log("error in use chat store , get messages , error is ==> ", error);
@@ -84,11 +97,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         const { selectedUser, messages } = get()
         try {
             const res = await axiosInstance.post(`/api/message/send/${selectedUser?._id}`, messageData);
-            set({ messages: [...messages, res.data] })
-            // get().subscribeToNewMessages()
-            // console.log(res);
-
-
+            set({ messages: mergeMessages(messages, [res.data]) })
         } catch (error) {
             toast.error("something went wrong");
         }
@@ -103,13 +112,14 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
 
+        // remove any previous listener first so we never stack duplicate handlers
+        socket.off("newMessage");
 
-        const handler = (newMessage: MessagesType) => {
-            if (newMessage.senderId !== selectedUser._id) return
-            set((state) => ({ messages: [...state.messages, newMessage] }));
-        };
-
-        socket.on("newMessage", handler);
+        socket.on("newMessage", (newMessage: MessagesType) => {
+            // only accept messages from the currently selected contact
+            if (newMessage.senderId !== selectedUser._id) return;
+            set((state) => ({ messages: mergeMessages(state.messages, [newMessage]) }));
+        });
     },
 
 
@@ -119,5 +129,5 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         socket.off("newMessage");
     },
 
-    setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setSelectedUser: (selectedUser) => set({ selectedUser, messages: [] }),
 }))

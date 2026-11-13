@@ -11,17 +11,11 @@ import toast from "react-hot-toast";
 
 
 const SignUpComponent = () => {
-    const { authUser, isCheckingAuth, isSigningUp, signUp, checkAuth } = useAuthStore()
+    const { authUser, isCheckingAuth, isSigningUp, signUp } = useAuthStore()
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
 
     const router = useRouter();
-
-
-    useEffect(() => {
-        checkAuth();
-    }, [])
-
 
 
     useEffect(() => {

@@ -10,18 +10,12 @@ import { useRouter } from "next/navigation";
 
 
 
-
 const LoginComponent = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({ email: "", password: "" });
-    const { login, isLoginingIn, authUser, isCheckingAuth, checkAuth } = useAuthStore();
+    const { login, isLoginingIn, authUser, isCheckingAuth } = useAuthStore();
 
     const router = useRouter();
-
-
-    useEffect(() => {
-        checkAuth();
-    }, [])
 
 
     useEffect(() => {
@@ -32,7 +26,7 @@ const LoginComponent = () => {
                 router.push("/login")
             }
         }
-    }, [authUser, isCheckingAuth])
+    }, [authUser, isCheckingAuth, router]);
 
 
 

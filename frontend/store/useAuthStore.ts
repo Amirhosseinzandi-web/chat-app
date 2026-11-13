@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { axiosInstance, customInstance } from "@/lib/axios";
+import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
-import { io } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 
 
 type User = {
@@ -19,9 +19,10 @@ type AuthStoreType = {
     isLoginingIn: boolean
     isUpdatingProfile: boolean
     isCheckingAuth: boolean
-    // task : fix type onlineUsers
-    onlineUsers: any
-    socket: any
+    onlineUsers: string[]
+    socket: Socket | null
+    // jwt kept in memory only (never localStorage) and used to authenticate the socket
+    authToken: string | null
 
     checkAuth: () => Promise<void>
 
@@ -48,6 +49,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
     isCheckingAuth: true,
     onlineUsers: [],
     socket: null,
+    authToken: null,
 
 
     checkAuth: async () => {
@@ -72,6 +74,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
 
         try {
             const res = await axiosInstance.post("/api/auth/signup", data);
+            set({ authToken: res.data.token });
 
             set({ authUser: res.data })
             toast.success("user created successfully");
@@ -91,9 +94,9 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
 
             await axiosInstance.delete("/api/auth/logout");
 
-            set({ authUser: null })
-            toast.success("logout successfully");
             get().disconnectSocket()
+            set({ authUser: null, authToken: null })
+            toast.success("logout successfully");
 
         } catch (err) {
             toast.error("logout failed");
@@ -104,6 +107,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
         set({ isLoginingIn: true })
         try {
             const res = await axiosInstance.post("/api/auth/login", data);
+            set({ authToken: res.data.token });
 
             set({ authUser: res.data })
             toast.success("login successfully");
@@ -133,19 +137,24 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
             toast.error("Profile update failed");
         } finally {
             set({ isUpdatingProfile: false });
-            // toast.dismiss();
         }
     },
 
     connectSocket: () => {
-        const { authUser, socket } = get();
-        if (!authUser || socket?.connected) return;
+        const { authUser, socket, authToken } = get();
+        // idempotent: do not create a second socket if one exists (even while still connecting)
+        if (!authUser || socket) return;
 
         const socketUrl = process.env.NEXT_PUBLIC_CHAT_APP_API_URL;
 
         const newSocket = io(socketUrl, {
             transports: ['websocket', 'polling'],
             withCredentials: true,
+            auth: {
+                // server verifies this JWT and derives the userId from it
+                token: authToken,
+            },
+            // legacy fallback (server accepts query identity for now)
             query: {
                 userId: authUser._id,
             },
@@ -164,7 +173,11 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
     },
 
     disconnectSocket: () => {
-        if (get().socket?.connected) get().socket.disconnect()
+        const { socket } = get();
+        if (socket) {
+            socket.disconnect();
+            set({ socket: null, onlineUsers: [] });
+        }
     },
 
 }))

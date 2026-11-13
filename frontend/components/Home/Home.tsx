@@ -11,15 +11,10 @@ import { useEffect } from "react";
 
 
 const HomeComponent = () => {
-    const { authUser, isCheckingAuth, checkAuth } = useAuthStore()
+    // checkAuth is handled once in CustomLayout; this page only reacts to the result
+    const { authUser, isCheckingAuth } = useAuthStore()
     const { selectedUser } = useChatStore()
     const router = useRouter();
-
-
-    useEffect(() => {
-        checkAuth();
-    }, [])
-
 
 
     useEffect(() => {
@@ -30,7 +25,7 @@ const HomeComponent = () => {
                 router.push("/login")
             }
         }
-    }, [authUser, isCheckingAuth])
+    }, [authUser, isCheckingAuth, router])
 
     return (
         <div className="h-screen bg-base-200">

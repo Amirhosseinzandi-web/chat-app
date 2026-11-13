@@ -7,15 +7,9 @@ import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
 
 const ProfilePageComponent = () => {
-    const { authUser, isUpdatingProfile, updateProfile, isCheckingAuth, checkAuth } = useAuthStore();
+    const { authUser, isUpdatingProfile, updateProfile, isCheckingAuth } = useAuthStore();
     const [selectedImg, setSelectedImg] = useState<string | null>(null);
     const router = useRouter();
-
-
-
-    useEffect(() => {
-        checkAuth();
-    }, [])
 
 
 
