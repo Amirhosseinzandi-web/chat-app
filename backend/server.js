@@ -25,7 +25,7 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
-connectToDatabase();
+await connectToDatabase();
 
 
 // *************Auth Routes*************************************
@@ -33,9 +33,6 @@ connectToDatabase();
 app.use("/api/auth", authRoute)
 app.use("/api/message", messageRoute)
 app.use("/api/admin", adminRoute)
-
-
-
 
 server.listen(process.env.PORT, () => {
     console.log(`server is running on port ${process.env.PORT}`);

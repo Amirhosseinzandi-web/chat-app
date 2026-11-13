@@ -2,17 +2,21 @@ import mongoose from "mongoose";
 
 
 
-
-const connectToDatabase = () => {
+const connectToDatabase = async () => {
     try {
-        mongoose.connect(process.env.CHAT_APP_API_URL)
+        await mongoose.connect(process.env.CHAT_APP_API_URL, {
+            // wait longer than the default 30s? No - the default is fine; but if Atlas/DNS is
+            // temporarily unreachable we want a clear error instead of a crash.
+            serverSelectionTimeoutMS: 30000,
+        });
         console.log("connected to database");
-    }
-    catch (err) {
-        console.log("error connecting to database");
-        throw err
+        return true;
+    } catch (err) {
+        console.error("error connecting to database:", err.message);
+        process.exit(1);
     }
 }
+
 
 
 export default connectToDatabase
