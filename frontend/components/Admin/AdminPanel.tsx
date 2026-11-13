@@ -40,7 +40,7 @@ const AdminPanel = () => {
       toast.error("Failed to load admin data");
     }
   }, []);
-
+ 
   useEffect(() => {
     if (authUser?.role === "admin") load();
   }, [authUser, load]);
