@@ -21,6 +21,13 @@ const messageSchema = new mongoose.Schema(
         },
         image: {
             type: String
+        },
+        // users who hid this message ONLY for themselves ("delete for me", Telegram-style).
+        // The message still exists for the other side.
+        deletedFor: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "userModel",
+            default: []
         }
     },
     { timestamps: true }

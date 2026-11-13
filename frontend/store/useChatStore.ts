@@ -13,7 +13,7 @@ export type UsersType = {
     createdAt?: string
 }
 
-type MessagesType = {
+export type MessagesType = {
     _id: string
     senderId: string
     receiverId: string
@@ -38,6 +38,8 @@ type ChatStoreType = {
     subscribeToNewMessages: () => void
     unsubscribeFromNewMessages: () => void
     sendMessage: (messageData: {}) => Promise<void>
+    deleteMessage: (messageId: string, scope: "me" | "all") => Promise<void>
+    clearConversation: (scope: "me" | "all") => Promise<void>
 }
 
 
@@ -130,4 +132,31 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
     },
 
     setSelectedUser: (selectedUser) => set({ selectedUser, messages: [] }),
+
+    deleteMessage: async (messageId, scope) => {
+        try {
+            await axiosInstance.delete(`/api/message/${messageId}`, { data: { scope } });
+            // remove it from my view (for "all" the other side gets the socket event)
+            set((state) => ({ messages: state.messages.filter((m) => m._id !== messageId) }));
+        } catch (error) {
+            console.log("error in delete message, error is ==> ", error);
+            toast.error("something went wrong");
+        }
+    },
+
+    clearConversation: async (scope) => {
+        const { selectedUser } = get();
+        const { authUser } = useAuthStore.getState();
+        try {
+            // :id = the other side; for Saved Messages selectedUser is yourself
+            const otherId = selectedUser?._id ?? authUser?._id;
+            if (!otherId) return;
+            await axiosInstance.delete(`/api/message/clear/${otherId}`, { data: { scope } });
+            set({ messages: [] });
+        } catch (error) {
+            console.log("error in clear conversation, error is ==> ", error);
+            toast.error("something went wrong");
+        }
+    },
+
 }))

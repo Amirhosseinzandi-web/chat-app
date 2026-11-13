@@ -2,3 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------- chat feel: soft entrance animations ---------- */
+
+@keyframes chatIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes messageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.chat-panel-enter { animation: chatIn 0.22s ease-out both; }
+.message-enter    { animation: messageIn 0.18s ease-out both; }
+.overlay-fade     { animation: fadeIn 0.15s ease-out both; }
+.modal-pop        { animation: modalIn 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.15) both; }
+
+/* Telegram-like: no iOS callout / text selection while long-pressing a bubble */
+.no-touch-callout {
+  -webkit-touch-callout: none;
+  user-select: none;
+}

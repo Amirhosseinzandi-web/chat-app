@@ -32,7 +32,7 @@ const HomeComponent = () => {
                         </div>
 
                         {selectedUser ? (
-                            <div className="flex-1 flex w-full lg:w-auto">
+                            <div key={selectedUser._id} className="flex-1 flex w-full lg:w-auto chat-panel-enter">
                                 <ChatContainerComponent />
                             </div>
                         ) : (

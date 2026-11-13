@@ -1,7 +1,9 @@
 "use client"
 import { useAuthStore } from "@/store/useAuthStore";
+import { useChatStore } from "@/store/useChatStore";
 import { LogOut, MessageSquare, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 
@@ -10,6 +12,14 @@ import Link from "next/link";
 
 const Navbar = () => {
     const { authUser, logOut } = useAuthStore();
+    const { setSelectedUser } = useChatStore();
+    const router = useRouter();
+
+    // clicking the logo always returns to a fresh home view (closes any open chat)
+    const goHome = () => {
+        setSelectedUser(null);
+        router.push("/");
+    };
 
 
 
@@ -21,12 +31,12 @@ const Navbar = () => {
             <div className="container mx-auto px-4 h-16">
                 <div className="flex items-center justify-between h-full">
                     <div className="flex items-center gap-8">
-                        <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-all">
+                        <button onClick={goHome} className="flex items-center gap-2.5 hover:opacity-80 transition-all">
                             <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
                                 <MessageSquare className="w-5 h-5 text-primary" />
                             </div>
                             <h1 className="text-lg font-bold">Chatty</h1>
-                        </Link>
+                        </button>
                     </div>
 
                     <div className="flex items-center gap-2">

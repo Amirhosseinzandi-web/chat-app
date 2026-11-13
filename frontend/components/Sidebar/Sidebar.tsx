@@ -1,15 +1,14 @@
 "use client";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import { useChatStore } from "@/store/useChatStore";
-import { Users } from "lucide-react";
+import { useChatStore, type UsersType } from "@/store/useChatStore";
+import { Bookmark, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
-import type { UsersType } from "@/store/useChatStore";
 
 
 const SidebarComponent = () => {
-    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore()
+    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
     const { onlineUsers, authUser } = useAuthStore();
 
@@ -19,14 +18,29 @@ const SidebarComponent = () => {
 
     useEffect(() => {
         getUsers()
-
-    }, [getUsers])
-
-
-    const filteredUsers = showOnlineOnly ? users.filter((user: UsersType) => onlineUsers.includes(user._id)) : users
+    }, [getUsers]);
 
 
-    if (isUsersLoading) return <SidebarSkeleton />
+    const filteredUsers = showOnlineOnly
+        ? users.filter((user: UsersType) => onlineUsers.includes(user._id))
+        : users;
+
+
+    if (isUsersLoading) return <SidebarSkeleton />;
+
+
+    // Saved Messages: a "conversation" with yourself (task: Telegram-style saved messages)
+    const savedEntry: UsersType | null = authUser
+        ? {
+            _id: authUser._id,
+            email: authUser.email,
+            profilePic: authUser.profilePic || "",
+            fullName: "Saved Messages",
+        }
+        : null;
+
+    const selectedId = selectedUser?._id;
+
 
     return (
         // mobile: full-width list; desktop: fixed-width sidebar
@@ -53,15 +67,42 @@ const SidebarComponent = () => {
             </div>
 
             <div className="overflow-y-auto w-full py-3">
+                {/* Saved Messages - always first, like Telegram */}
+                {savedEntry && (
+                    <button
+                        onClick={() => setSelectedUser(savedEntry)}
+                        className={
+                            "w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors " +
+                            (selectedId === savedEntry._id ? "bg-base-300" : "")
+                        }
+                    >
+                        <div className="relative shrink-0">
+                            <img
+                                src={savedEntry.profilePic || "/avatar.png"}
+                                alt="Saved Messages"
+                                className="size-12 object-cover rounded-full"
+                            />
+                            <span className="absolute bottom-0 right-0 bg-primary text-primary-content
+                                rounded-full p-1 border-2 border-base-100">
+                                <Bookmark className="size-3" />
+                            </span>
+                        </div>
+                        <div className="text-left min-w-0">
+                            <div className="font-medium truncate">Saved Messages</div>
+                            <div className="text-sm text-zinc-400">Your personal cloud</div>
+                        </div>
+                    </button>
+                )}
+
                 {filteredUsers.map((user: UsersType) => (
                     <button
                         key={user._id}
                         onClick={() => setSelectedUser(user)}
-                        className={`
-                  w-full p-3 flex items-center gap-3
-                  hover:bg-base-300 transition-colors
-                  ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : ""}
-                `}
+                        className={
+                            "w-full p-3 flex items-center gap-3 " +
+                            "hover:bg-base-300 transition-colors " +
+                            (selectedId === user._id ? "bg-base-300" : "")
+                        }
                     >
                         <div className="relative shrink-0">
                             <img
@@ -71,13 +112,13 @@ const SidebarComponent = () => {
                             />
                             {onlineUsers.includes(user._id) && (
                                 <span
-                                    className="absolute bottom-0 right-0 size-3 bg-green-500 
-                      rounded-full ring-2 ring-zinc-900"
+                                    className="absolute bottom-0 right-0 size-3 bg-green-500
+                       rounded-full ring-2 ring-zinc-900"
                                 />
                             )}
                         </div>
 
-                        {/* User info - visible on all screen sizes now */}
+                        {/* User info - visible on all screen sizes */}
                         <div className="text-left min-w-0">
                             <div className="font-medium truncate">{user.fullName}</div>
                             <div className="text-sm text-zinc-400">
@@ -95,7 +136,6 @@ const SidebarComponent = () => {
             </div>
         </aside>
     );
-
 }
 
 export default SidebarComponent;
