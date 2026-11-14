@@ -16,9 +16,12 @@ self.addEventListener("push", (event) => {
 });
 
 async function showChattyNotification(data) {
+    const title = data.title || "Chatty";
+    const body = data.body || "You have a new message";
+    const conversationId = data.conversationId || "";
+
+    // rich version (Android/desktop): icon, badge, custom sound, re-alerting
     try {
-        const title = data.title || "Chatty";
-        const body = data.body || "You have a new message";
         await self.registration.showNotification(title, {
             body: body,
             icon: "/icon-512.png",
@@ -26,12 +29,30 @@ async function showChattyNotification(data) {
             sound: NOTIFICATION_SOUND,
             tag: "chatty-message",
             renotify: true,
-            data: {
-                conversationId: data.conversationId || "",
-            },
+            data: { conversationId: conversationId },
         });
+        return;
     } catch (err) {
-        // last resort (e.g. permission revoked) - swallow
+        // iOS can reject options it does not support (e.g. relative sound path)
+        console.log("rich notification failed, falling back:", err);
+    }
+
+    // minimal version (iOS-safe): title + body only
+    try {
+        await self.registration.showNotification(title, {
+            body: body,
+            data: { conversationId: conversationId },
+        });
+        return;
+    } catch (err) {
+        console.log("minimal notification failed too:", err);
+    }
+
+    // absolute last resort
+    try {
+        await self.registration.showNotification(title);
+    } catch (err2) {
+        // permission revoked or SW shutting down - nothing we can do
     }
 }
 
