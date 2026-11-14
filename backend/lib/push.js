@@ -82,6 +82,10 @@ export const setVapidKeys = (privateJwk) => {
     cachedPrivateJwk = privateJwk;
 };
 
+// The VAPID "subject" - used BOTH as the JWT sub claim AND (Apple requires)
+// the Subject HTTP header. They MUST be identical.
+const getVapidSubject = () => process.env.VAPID_SUBJECT || "mailto:blackviper933@gmail.com";
+
 const importPrivate = async () => {
     if (!cachedPrivateJwk) {
         throw new Error("VAPID keys not configured (run scripts/generate-vapid-keys.js)");
@@ -99,7 +103,7 @@ export const vapidPublicKeyBase64Url = () => {
 
 const signVapidToken = async (endpoint) => {
     const url = new URL(endpoint);
-    const subject = process.env.VAPID_SUBJECT || "mailto:blackviper933@gmail.com";
+    const subject = getVapidSubject();
     const headers = base64UrlJson({ typ: "JWT", alg: "ES256" });
     const claims = base64UrlJson({
         sub: subject,
@@ -174,6 +178,9 @@ export const pushToSubscription = async (subscription, payloadObject) => {
             "Content-Length": String(body.length),
             "Crypto-Key": "dh=" + toB64Url(serverPublicKey) + ",p256ecdsa=" + vapidPublicKeyBase64Url(),
             "Authorization": "WebPush " + token,
+            // Apple (APNs) REQUIRES a Subject header that exactly matches the
+            // JWT sub claim. Google (FCM) ignores it. Without it iOS gets a 4xx.
+            "Subject": getVapidSubject(),
             "TTL": "60"
         },
         body: Buffer.from(body)
