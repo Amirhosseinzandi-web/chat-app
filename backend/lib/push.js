@@ -86,7 +86,9 @@ const importPrivate = async () => {
     if (!cachedPrivateJwk) {
         throw new Error("VAPID keys not configured (run scripts/generate-vapid-keys.js)");
     }
-    return subtle.importKey("jwk", cachedPrivateJwk, { name: "EC", namedCurve: "P-256" }, true, ["sign"]);
+    // NOTE: Node's WebCrypto requires "ECDSA" (browsers also accept "EC");
+    // usage "sign" marks it as an ECDSA signing key.
+    return subtle.importKey("jwk", cachedPrivateJwk, { name: "ECDSA", namedCurve: "P-256" }, true, ["sign"]);
 };
 
 // public key for the browser: base64url(0x04 || x || y), derived from the private JWK
@@ -106,8 +108,13 @@ const signVapidToken = async (endpoint) => {
     });
     const signingInput = headers + "." + claims;
     const key = await importPrivate();
-    const sig = await subtle.sign("ECDSA", key, { name: "ES256" }, textEncoder.encode(signingInput));
-    // WebCrypto ES256 output is raw r||s (64 bytes) - exactly what VAPID wants
+    // Node WebCrypto needs the full algorithm object as the first argument.
+    // The ECDSA-SHA256 (ES256) output is raw r||s (64 bytes) - exactly what VAPID wants.
+    const sig = await subtle.sign(
+        { name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" },
+        key,
+        textEncoder.encode(signingInput)
+    );
     return signingInput + "." + toB64Url(new Uint8Array(sig));
 };
 

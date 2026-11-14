@@ -115,10 +115,22 @@ import { setVapidKeys, vapidPublicKeyBase64Url } from "../lib/push.js";
 const envText = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", ".env"), "utf8");
 const m = envText.match(/VAPID_PRIVATE_KEY=(.+)/);
 if (m) {
-    setVapidKeys(JSON.parse(m[1].trim()));
+    const jwk = JSON.parse(m[1].trim());
+    setVapidKeys(jwk);
     const pub = vapidPublicKeyBase64Url();
     console.log("VAPID public key length (should be 87 b64url bytes for 65-byte key):", pub.length);
     console.log("VAPID public key:", pub);
+
+    // ---------- 5) VAPID JWT: sign exactly like push.js and verify against the public key ----------
+    const b64j = (o) => Buffer.from(JSON.stringify(o)).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const signingInput = b64j({ typ: "JWT", alg: "ES256" }) + "." + b64j({ sub: "mailto:blackviper933@gmail.com", aud: "https://fcm.googleapis.com", exp: Math.floor(Date.now() / 1000) + 1200 });
+    const priv = await subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, true, ["sign"]);
+    const sig = new Uint8Array(await subtle.sign({ name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" }, priv, textEncoder.encode(signingInput)));
+    if (sig.length !== 64) throw new Error("ES256 signature must be raw r||s (64 bytes), got " + sig.length);
+    const pubKey = await subtle.importKey("jwk", { kty: "EC", crv: jwk.crv, x: jwk.x, y: jwk.y }, { name: "ECDSA", namedCurve: "P-256" }, true, ["verify"]);
+    const verified = await subtle.verify({ name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" }, pubKey, sig, textEncoder.encode(signingInput));
+    if (!verified) throw new Error("VAPID JWT signature did not verify");
+    console.log("VAPID JWT sign+verify: OK (64-byte raw r||s, verifies)");
 } else {
     console.log("no VAPID_PRIVATE_KEY in .env");
 }
