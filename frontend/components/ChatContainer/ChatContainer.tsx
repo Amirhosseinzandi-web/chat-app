@@ -147,6 +147,7 @@ const ChatContainerComponent = () => {
                             selected={selectedIds.has(item._id)}
                             selecting={selecting}
                             otherUserPic={otherUserPic}
+                            allMessages={messages}
                             onToggleSelect={toggleSelect}
                             onOpenSenderProfile={(senderId) => setProfileId(senderId)}
                             onDelete={(m) => setDeleteFor(m)}

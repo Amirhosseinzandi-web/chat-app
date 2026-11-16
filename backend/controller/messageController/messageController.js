@@ -51,7 +51,7 @@ export const getMessages = async (req, res) => {
 export const sendMessage = async (req, res) => {
     try {
 
-        const { text, imageUrl } = req.body;
+        const { text, imageUrl, replyTo } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user._id;
 
@@ -73,12 +73,27 @@ export const sendMessage = async (req, res) => {
             return res.status(400).json({ message: "message is empty" });
         }
 
+        // optional reply target must be a real message of THIS conversation
+        let replyToId = null;
+        if (replyTo) {
+            if (!mongoose.Types.ObjectId.isValid(replyTo)) {
+                return res.status(400).json({ message: "invalid replyTo id" });
+            }
+            const target = await messageModel.findById(replyTo).select("_id senderId receiverId deletedFor");
+            const visibleToMe = target && !target.deletedFor?.some((x) => x.equals(senderId));
+            const inConversation = target && (target.senderId.equals(senderId) || target.receiverId.equals(senderId));
+            if (!visibleToMe || !inConversation) {
+                return res.status(400).json({ message: "reply target not found" });
+            }
+            replyToId = target._id;
+        }
 
         const newMessage = await messageModel.create({
             senderId,
             receiverId,
             text: text,
-            image: imageUrl
+            image: imageUrl,
+            replyTo: replyToId
         })
 
         res.status(201).json(newMessage)
@@ -222,3 +237,48 @@ export const clearConversation = async (req, res) => {
     }
 }
 
+
+// PUT /api/message/:id   body: { text }
+// Telegram-style edit: only the sender, only the text, marks the message "edited".
+// The other side gets the change live through the "messageEdited" socket event.
+export const editMessage = async (req, res) => {
+    try {
+        const { id: messageId } = req.params;
+        const { text } = req.body;
+        const myId = req.user._id;
+
+        if (typeof text !== "string" || !text.trim()) {
+            return res.status(400).json({ message: "text is required" });
+        }
+        if (text.length > 2000) {
+            return res.status(400).json({ message: "text too long" });
+        }
+
+        const message = await messageModel.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ message: "message not found" });
+        }
+        if (!message.senderId.equals(myId)) {
+            return res.status(403).json({ message: "you can only edit your own messages" });
+        }
+        if (message.image && !message.text) {
+            return res.status(400).json({ message: "image-only messages cannot be edited" });
+        }
+
+        message.text = text.trim();
+        message.edited = true;
+        await message.save();
+
+        res.status(200).json(message);
+
+        // live update on the other side
+        const otherId = message.receiverId.equals(myId) ? message.senderId : message.receiverId;
+        const otherSocket = getReciverSocketId(String(otherId));
+        if (otherSocket) {
+            io.to(otherSocket).emit("messageEdited", message);
+        }
+    } catch (err) {
+        console.log(`error in editMessage controller, error is ==> ${err}`);
+        return res.status(500).json({ message: "server-error" });
+    }
+}

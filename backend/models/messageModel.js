@@ -28,6 +28,17 @@ const messageSchema = new mongoose.Schema(
             type: [mongoose.Schema.Types.ObjectId],
             ref: "userModel",
             default: []
+        },
+        // Telegram-style reply: the message this one answers (optional)
+        replyTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "messageModel",
+            default: null
+        },
+        // set when the sender edited the text
+        edited: {
+            type: Boolean,
+            default: false
         }
     },
     { timestamps: true }

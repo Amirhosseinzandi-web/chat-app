@@ -3,7 +3,8 @@
 import { formatMessageTime } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { MessagesType } from "@/store/useChatStore";
-import { Copy, Forward, ListChecks, Trash2 } from "lucide-react";
+import { Copy, Forward, ListChecks, Pencil, Reply, Trash2 } from "lucide-react";
+import { useComposerStore } from "@/store/useComposerStore";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
@@ -26,6 +27,10 @@ type Props = {
     onImageClick: (m: MessagesType) => void;
     /** profile picture of the other side of this 1:1 chat (for received bubbles) */
     otherUserPic: string;
+    /** full message list (to resolve the reply quote) */
+    allMessages: Msg[];
+    /** delete-for-everyone permission (sender only) - drives the Delete item */
+    canDeleteForAll?: boolean;
 };
 
 type MenuItemProps = {
@@ -51,10 +56,15 @@ const MenuItem = ({ icon: Icon, label, danger, onClick }: MenuItemProps) => (
 const MessageRow = ({
     message, selected, selecting,
     onToggleSelect, onOpenSenderProfile, onDelete, onForward, onBubbleClick, onImageClick,
-    otherUserPic,
+    otherUserPic, allMessages,
 }: Props) => {
     const { authUser } = useAuthStore();
+    const { setReplyingTo, setEditing } = useComposerStore();
     const [menu, setMenu] = useState<Pos | null>(null);
+
+    const quoted = message.replyTo
+        ? allMessages.find((m) => m._id === message.replyTo)
+        : null;
     const openedAtRef = useRef(0);
 
     const isOwn = message.senderId === authUser?._id;
@@ -128,6 +138,7 @@ const MessageRow = ({
                 <div className="chat-header mb-1">
                     <time className="text-xs opacity-50 ml-1">
                         {formatMessageTime(message.createdAt)}
+                        {message.edited && <span className="ml-1">(edited)</span>}
                     </time>
                 </div>
 
@@ -148,6 +159,26 @@ const MessageRow = ({
                             : "bg-base-100 rounded-bl-md")
                     }
                 >
+                    {quoted && (
+                        <div
+                            className="mb-1 pl-2 border-l-2 border-current/40 opacity-80 cursor-pointer"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const target = allMessages.find((m) => m._id === quoted._id);
+                                if (target) {
+                                    const el = document.querySelector("[data-message-id='" + target._id + "']");
+                                    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                }
+                            }}
+                        >
+                            <div className="text-[11px] font-semibold">
+                                {quoted.senderId === authUser?._id ? "You" : "Them"}
+                            </div>
+                            <div className="text-xs truncate max-w-[180px]">
+                                {quoted.text || "📷 Image"}
+                            </div>
+                        </div>
+                    )}
                     {message.image && (
                         <img
                             src={message.image}
@@ -185,8 +216,20 @@ const MessageRow = ({
                         className="fixed z-50 menu-pop w-52 bg-base-100 rounded-xl shadow-2xl border border-base-300 py-1"
                         style={{ left, top }}
                     >
+                        <MenuItem
+                            icon={Reply}
+                            label="Reply"
+                            onClick={() => { setMenu(null); setReplyingTo(message); }}
+                        />
                         {message.text && (
                             <MenuItem icon={Copy} label="Copy" onClick={copyText} />
+                        )}
+                        {isOwn && !!message.text && (
+                            <MenuItem
+                                icon={Pencil}
+                                label="Edit"
+                                onClick={() => { setMenu(null); setEditing(message); }}
+                            />
                         )}
                         <MenuItem
                             icon={Forward}

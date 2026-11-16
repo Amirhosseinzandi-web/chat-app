@@ -1,8 +1,9 @@
 "use client"
 
 import { useChatStore } from "@/store/useChatStore";
-import { Image as ImageIcon, Send, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { Image as ImageIcon, Pencil, Reply, Send, X } from "lucide-react";
+import { useComposerStore } from "@/store/useComposerStore";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import imageCompression from "browser-image-compression";
 
@@ -16,7 +17,8 @@ const MessageInput = () => {
     const textRef = useRef<HTMLTextAreaElement | null>(null);
 
 
-    const { sendMessage, isMessagesLoading, isSendingMessage } = useChatStore();
+    const { sendMessage, editMessage, isMessagesLoading, isSendingMessage, selectedUser } = useChatStore();
+    const { replyingTo, editing, closeComposer } = useComposerStore();
 
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,16 +63,43 @@ const MessageInput = () => {
     }
 
 
+    // enter edit mode: load the message text into the box
+    useEffect(() => {
+        if (editing) {
+            setText(editing.text || "");
+            textRef.current?.focus();
+        }
+    }, [editing]);
+
+    // switching chats resets the composer
+    useEffect(() => {
+        closeComposer();
+    }, [selectedUser?._id]);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // EDIT mode: apply the edit instead of sending a new message
+        if (editing) {
+            if (!text.trim() || text.trim() === editing.text) { closeComposer(); return; }
+            await editMessage(editing._id, text.trim());
+            closeComposer();
+            setText("");
+            return;
+        }
 
         if (!text.trim() && !imagePreview) return;
 
         try {
-            await sendMessage({ text: text.trim(), imageUrl: imagePreview });
+            await sendMessage({
+                text: text.trim(),
+                imageUrl: imagePreview,
+                replyTo: replyingTo?._id || undefined,
+            });
             // clear form
             setText("");
             setImagePreview(null);
+            closeComposer();
             if (fileInputRef.current) fileInputRef.current.value = "";
             // put the caret back in the box (user-initiated, keyboard already up)
             textRef.current?.focus();
@@ -85,6 +114,22 @@ const MessageInput = () => {
 
     return (
         <div className="p-3 sm:p-4 w-full border-t border-base-300 bg-base-100">
+            {(replyingTo || editing) && (
+                <div className="mb-3 flex items-center gap-3 bg-base-200/80 rounded-xl px-3 py-2 border-l-4 border-primary">
+                    {editing ? <Pencil className="size-4 shrink-0 text-primary" /> : <Reply className="size-4 shrink-0 text-primary" />}
+                    <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-primary">
+                            {editing ? "Editing message" : "Replying to " + (replyingTo?.senderId === selectedUser?._id ? selectedUser?.fullName : "yourself")}
+                        </div>
+                        <div className="text-sm text-base-content/60 truncate">
+                            {(editing || replyingTo)?.text || "📷 Image"}
+                        </div>
+                    </div>
+                    <button onClick={closeComposer} className="btn btn-ghost btn-sm btn-circle" aria-label="Cancel">
+                        <X className="size-4" />
+                    </button>
+                </div>
+            )}
             {imagePreview && (
                 <div className="mb-3 flex items-center gap-3">
                     <div className="relative">

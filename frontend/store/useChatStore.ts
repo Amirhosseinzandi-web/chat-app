@@ -20,6 +20,8 @@ export type MessagesType = {
     text: string
     image: string
     createdAt: string
+    replyTo?: string | null
+    edited?: boolean
 }
 
 
@@ -38,6 +40,7 @@ type ChatStoreType = {
     subscribeToNewMessages: () => void
     unsubscribeFromNewMessages: () => void
     sendMessage: (messageData: {}) => Promise<void>
+    editMessage: (messageId: string, text: string) => Promise<void>
     deleteMessage: (messageId: string, scope: "me" | "all") => Promise<void>
     clearConversation: (scope: "me" | "all") => Promise<void>
 }
@@ -122,6 +125,13 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
             if (newMessage.senderId !== selectedUser._id) return;
             set((state) => ({ messages: mergeMessages(state.messages, [newMessage]) }));
         });
+
+        // the other side edited a message -> update it in place
+        socket.on("messageEdited", (updated: MessagesType) => {
+            set((state) => ({
+                messages: state.messages.map((m) => (m._id === updated._id ? { ...m, ...updated } : m)),
+            }));
+        });
     },
 
 
@@ -129,9 +139,22 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         const socket = useAuthStore.getState().socket;
         if (!socket) return
         socket.off("newMessage");
+        socket.off("messageEdited");
     },
 
     setSelectedUser: (selectedUser) => set({ selectedUser, messages: [] }),
+
+    editMessage: async (messageId, text) => {
+        try {
+            const res = await axiosInstance.put("/api/message/" + messageId, { text });
+            set((state) => ({
+                messages: state.messages.map((m) => (m._id === messageId ? res.data : m)),
+            }));
+        } catch (error) {
+            console.log("error in edit message, error is ==> ", error);
+            toast.error("something went wrong");
+        }
+    },
 
     deleteMessage: async (messageId, scope) => {
         try {
