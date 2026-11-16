@@ -121,7 +121,7 @@ const ChatContainerComponent = () => {
 
             {/* Telegram-style selection toolbar */}
             {selecting && (
-                <div className="flex items-center justify-between px-4 py-2.5 bg-base-200 border-b border-base-300 overlay-fade">
+                <div className="flex items-center justify-between px-4 py-2.5 m-3 glass-panel overlay-fade">
                     <button className="btn btn-ghost btn-sm btn-circle" onClick={() => setSelectedIds(new Set())} aria-label="Cancel selection">
                         <X className="size-5" />
                     </button>
@@ -138,7 +138,7 @@ const ChatContainerComponent = () => {
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-6 bg-base-200/40">
+            <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-6">
                 <div className="flex flex-col gap-3 max-w-3xl mx-auto">
                     {messages?.map((item, idx) => (
                         <MessageRow
@@ -189,26 +189,26 @@ const ChatContainerComponent = () => {
                     onClick={() => setForwarding(null)}
                 >
                     <div
-                        className="w-full max-w-sm bg-base-100 rounded-2xl shadow-2xl p-4 modal-pop"
+                        className="w-full max-w-sm glass-panel p-4 modal-pop"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Forward className="size-5 text-primary" />
-                            <h3 className="font-semibold">Forward to</h3>
+                            <h3 className="font-semibold text-pearl">Forward to</h3>
                         </div>
                         <div className="max-h-72 overflow-y-auto flex flex-col gap-1">
                             {users.map((u) => (
                                 <button
                                     key={u._id}
-                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 text-left transition-colors"
+                                    className="flex items-center gap-3 p-2 rounded-lg glass-item border-0 text-left"
                                     onClick={() => forwardTo(u)}
                                 >
                                     <img src={u.profilePic || "/avatar.png"} alt={u.fullName} className="size-9 rounded-full object-cover" />
-                                    <span className="text-sm truncate">{u.fullName}</span>
+                                    <span className="text-sm truncate text-pearl">{u.fullName}</span>
                                 </button>
                             ))}
                             {users.length === 0 && (
-                                <p className="text-sm text-base-content/60 p-2">No chats yet</p>
+                                <p className="text-sm text-dim p-2">No chats yet</p>
                             )}
                         </div>
                     </div>

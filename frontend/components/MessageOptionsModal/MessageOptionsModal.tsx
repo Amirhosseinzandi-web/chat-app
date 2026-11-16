@@ -30,18 +30,18 @@ const MessageOptionsModal = ({ message, isOwn, onClose }: Props) => {
             onClick={onClose}
         >
             <div
-                className="w-full max-w-sm bg-base-100 rounded-2xl shadow-2xl p-5 modal-pop"
+                className="w-full max-w-sm glass-panel rounded-2xl p-5 modal-pop"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-semibold">Delete message?</h3>
+                    <h3 className="text-lg font-semibold text-pearl">Delete message?</h3>
                     <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Close">
                         <X className="size-4" />
                     </button>
                 </div>
 
                 {/* small preview of the message being deleted */}
-                <div className="text-sm bg-base-300/60 rounded-lg p-3 mb-4 truncate">
+                <div className="text-sm glass-soft rounded-lg p-3 mb-4 truncate text-pearl/80">
                     {message.text || (message.image ? "📷 Image message" : "Message")}
                 </div>
 
@@ -72,7 +72,7 @@ const MessageOptionsModal = ({ message, isOwn, onClose }: Props) => {
                             >
                                 {busy === "me" ? "Deleting..." : "Delete for me"}
                             </button>
-                            <p className="text-xs text-base-content/50 text-center pt-1">
+                            <p className="text-xs text-dim text-center pt-1">
                                 You can&apos;t delete the other person&apos;s messages for everyone.
                             </p>
                         </>

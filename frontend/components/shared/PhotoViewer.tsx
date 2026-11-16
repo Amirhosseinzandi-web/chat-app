@@ -21,7 +21,7 @@ const PhotoViewer = ({ src, alt, onClose }: Props) => {
 
     return (
         <div
-            className="fixed inset-0 z-[60] bg-black/90 overlay-fade flex items-center justify-center p-4"
+            className="fixed inset-0 z-[60] bg-[#070C20]/95 backdrop-blur-xl overlay-fade flex items-center justify-center p-4"
             onClick={onClose}
         >
             <button

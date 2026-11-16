@@ -1,3 +1,1 @@
-
-
-export const myThemes = ["light", "dark", "cupcake"]
+export const myThemes = ["glassdark", "glasslight"]

@@ -37,21 +37,21 @@ const LoginComponent = () => {
 
 
     return (
-        <div className="h-screen grid lg:grid-cols-2">
+        <div className="h-screen grid lg:grid-cols-2 items-center">
             {/* Left Side - Form */}
             <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-                <div className="w-full max-w-md space-y-8">
+                <div className="w-full max-w-md glass-panel p-8 space-y-8">
                     {/* Logo */}
                     <div className="text-center mb-8">
                         <div className="flex flex-col items-center gap-2 group">
                             <div
-                                className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20
-                  transition-colors"
+                                className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/40 to-secondary/30 border border-white/20
+                  shadow-[0_0_20px_rgb(92_120_245/0.45)] flex items-center justify-center transition-transform group-hover:scale-105"
                             >
                                 <MessageSquare className="w-6 h-6 text-primary" />
                             </div>
-                            <h1 className="text-2xl font-bold mt-2">Welcome Back</h1>
-                            <p className="text-base-content/60">Sign in to your account</p>
+                            <h1 className="text-2xl font-bold mt-2 text-pearl">Welcome Back</h1>
+                            <p className="text-dim">Sign in to your account</p>
                         </div>
                     </div>
 
@@ -59,7 +59,7 @@ const LoginComponent = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Email</span>
+                                <span className="label-text font-medium text-pearl/90">Email</span>
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -67,7 +67,7 @@ const LoginComponent = () => {
                                 </div>
                                 <input
                                     type="email"
-                                    className={`input input-bordered w-full pl-10`}
+                                    className={`input w-full pl-10 glass-soft border-white/10 text-pearl placeholder-white/30 focus:outline-none focus:border-primary/60 focus:shadow-[0_0_0_3px_rgb(92_120_245/0.18)]`}
                                     placeholder="you@example.com"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -77,7 +77,7 @@ const LoginComponent = () => {
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-medium">Password</span>
+                                <span className="label-text font-medium text-pearl/90">Password</span>
                             </label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -85,7 +85,7 @@ const LoginComponent = () => {
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
-                                    className={`input input-bordered w-full pl-10`}
+                                    className={`input w-full pl-10 glass-soft border-white/10 text-pearl placeholder-white/30 focus:outline-none focus:border-primary/60 focus:shadow-[0_0_0_3px_rgb(92_120_245/0.18)]`}
                                     placeholder="••••••••"
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -104,7 +104,7 @@ const LoginComponent = () => {
                             </div>
                         </div>
 
-                        <button type="submit" className="btn btn-primary w-full" disabled={isLoginingIn}>
+                        <button type="submit" className="btn btn-primary w-full border-0 shadow-[0_8px_30px_rgb(92_120_245/0.35)] hover:shadow-[0_8px_36px_rgb(92_120_245/0.5)] hover:-translate-y-0.5 transition-all" disabled={isLoginingIn}>
                             {isLoginingIn ? (
                                 <>
                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -119,7 +119,7 @@ const LoginComponent = () => {
                     <div className="text-center">
                         <p className="text-base-content/60">
                             Don&apos;t have an account?{" "}
-                            <Link href="/signup" className="link link-primary">
+                            <Link href="/signup" className="link link-primary text-cyan">
                                 Create account
                             </Link>
                         </p>

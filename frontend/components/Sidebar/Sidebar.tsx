@@ -44,8 +44,8 @@ const SidebarComponent = () => {
 
     return (
         // mobile: full-width list; desktop: fixed-width sidebar
-        <aside className="h-full w-full lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
-            <div className="border-b border-base-300 w-full p-5">
+        <aside className="h-full w-full lg:w-80 border-r border-white/10 bg-white/[0.04] backdrop-blur-2xl flex flex-col transition-all duration-200">
+            <div className="border-b border-white/10 w-full p-5">
                 <div className="flex items-center gap-2">
                     <Users className="size-6" />
                     <span className="font-medium">Contacts</span>
@@ -58,9 +58,9 @@ const SidebarComponent = () => {
                             onChange={(e) => setShowOnlineOnly(e.target.checked)}
                             className="checkbox checkbox-sm"
                         />
-                        <span className="text-sm">Show online only</span>
+                        <span className="text-sm text-pearl/80">Show online only</span>
                     </label>
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-dim">
                         ({otherOnlineCount} {otherOnlineCount === 1 ? "user" : "users"} online)
                     </span>
                 </div>
@@ -72,8 +72,8 @@ const SidebarComponent = () => {
                     <button
                         onClick={() => setSelectedUser(savedEntry)}
                         className={
-                            "w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors " +
-                            (selectedId === savedEntry._id ? "bg-base-300" : "")
+                            "w-full p-3 flex items-center gap-3 glass-item border-0 rounded-none transition-colors " +
+                            (selectedId === savedEntry._id ? "is-active" : "")
                         }
                     >
                         <div className="relative shrink-0">
@@ -83,13 +83,13 @@ const SidebarComponent = () => {
                                 className="size-12 object-cover rounded-full"
                             />
                             <span className="absolute bottom-0 right-0 bg-primary text-primary-content
-                                rounded-full p-1 border-2 border-base-100">
+                                rounded-full p-1 border-2 border-[#101B43] shadow-[0_0_10px_rgb(92_120_245/0.6)]">
                                 <Bookmark className="size-3" />
                             </span>
                         </div>
                         <div className="text-left min-w-0">
-                            <div className="font-medium truncate">Saved Messages</div>
-                            <div className="text-sm text-zinc-400">Your personal cloud</div>
+                            <div className="font-medium truncate text-pearl">Saved Messages</div>
+                            <div className="text-sm text-dim">Your personal cloud</div>
                         </div>
                     </button>
                 )}
@@ -99,9 +99,8 @@ const SidebarComponent = () => {
                         key={user._id}
                         onClick={() => setSelectedUser(user)}
                         className={
-                            "w-full p-3 flex items-center gap-3 " +
-                            "hover:bg-base-300 transition-colors " +
-                            (selectedId === user._id ? "bg-base-300" : "")
+                            "w-full p-3 flex items-center gap-3 glass-item border-0 rounded-none transition-colors " +
+                            (selectedId === user._id ? "is-active" : "")
                         }
                     >
                         <div className="relative shrink-0">
@@ -112,16 +111,16 @@ const SidebarComponent = () => {
                             />
                             {onlineUsers.includes(user._id) && (
                                 <span
-                                    className="absolute bottom-0 right-0 size-3 bg-green-500
-                       rounded-full ring-2 ring-zinc-900"
+                                    className="absolute bottom-0 right-0 size-3 bg-emerald-400
+                       rounded-full ring-2 ring-[#101B43] shadow-[0_0_8px_rgb(74_222_128/0.8)]"
                                 />
                             )}
                         </div>
 
                         {/* User info - visible on all screen sizes */}
                         <div className="text-left min-w-0">
-                            <div className="font-medium truncate">{user.fullName}</div>
-                            <div className="text-sm text-zinc-400">
+                            <div className="font-medium truncate text-pearl">{user.fullName}</div>
+                            <div className="text-sm text-dim">
                                 {onlineUsers.includes(user._id) ? "Online" : "Offline"}
                             </div>
                         </div>
@@ -129,7 +128,7 @@ const SidebarComponent = () => {
                 ))}
 
                 {filteredUsers.length === 0 && (
-                    <div className="text-center text-zinc-500 py-4">
+                    <div className="text-center text-dim py-4">
                         {users.length === 0 ? "No contacts yet" : showOnlineOnly ? "No users online" : "No contacts found"}
                     </div>
                 )}

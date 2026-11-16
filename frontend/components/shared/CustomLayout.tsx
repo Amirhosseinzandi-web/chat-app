@@ -5,6 +5,7 @@ import { useThemeStore } from "@/store/useThemeStore";
 import { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { setupInstallPrompt, setupResubscribeListener, detectInstalledState } from "@/lib/pushClient";
+import AmbientBackdrop from "@/components/shared/AmbientBackdrop";
 
 
 const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
@@ -43,9 +44,12 @@ const CustomLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
 
 
     return (
-        <div data-theme={theme}>
-            {children}
-            <Toaster position="top-center" />
+        <div data-theme={theme} className="relative min-h-dvh">
+            <AmbientBackdrop />
+            <div className="relative z-10">
+                {children}
+                <Toaster position="top-center" />
+            </div>
         </div>
     );
 }
