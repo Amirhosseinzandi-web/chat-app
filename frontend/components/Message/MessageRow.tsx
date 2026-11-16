@@ -5,7 +5,8 @@ import { useAuthStore } from "@/store/useAuthStore";
 import type { MessagesType } from "@/store/useChatStore";
 import { Copy, Forward, ListChecks, Pencil, Reply, Trash2 } from "lucide-react";
 import { useComposerStore } from "@/store/useComposerStore";
-import { useEffect, useRef, useState } from "react";
+import type { MessagesType as Msg } from "@/store/useChatStore";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useLongPress } from "@/hooks/useLongPress";
@@ -99,11 +100,22 @@ const MessageRow = ({
         }
     };
 
-    // keep the floating menu inside the viewport
-    const hasCopy = !!message.text;
-    const menuHeight = (hasCopy ? 4 : 3) * 42 + 8;
-    const left = Math.max(8, Math.min(menu?.x ?? 0, (typeof window !== "undefined" ? window.innerWidth : 0) - 224));
-    const top = Math.max(8, Math.min(menu?.y ?? 0, (typeof window !== "undefined" ? window.innerHeight : 0) - menuHeight - 8));
+    // keep the floating menu inside the viewport: measure the real menu box
+    // (the item count changes with the message type, so estimates go stale)
+    const menuRef = useRef<HTMLDivElement | null>(null);
+    const [menuPos, setMenuPos] = useState<Pos | null>(null);
+
+    useLayoutEffect(() => {
+        if (!menu) { setMenuPos(null); return; }
+        const el = menuRef.current;
+        const w = el?.offsetWidth ?? 208;
+        const h = el?.offsetHeight ?? 240;
+        const left = Math.max(8, Math.min(menu.x, window.innerWidth - w - 8));
+        // near the bottom edge this flips the menu to open ABOVE the pointer,
+        // exactly like Telegram
+        const top = Math.max(8, Math.min(menu.y, window.innerHeight - h - 8));
+        setMenuPos({ x: left, y: top });
+    }, [menu]);
 
     return (
         <>
@@ -213,8 +225,9 @@ const MessageRow = ({
                         }}
                     />
                     <div
+                        ref={menuRef}
                         className="fixed z-50 menu-pop w-52 bg-base-100 rounded-xl shadow-2xl border border-base-300 py-1"
-                        style={{ left, top }}
+                        style={{ left: menuPos?.x ?? menu.x, top: menuPos?.y ?? menu.y }}
                     >
                         <MenuItem
                             icon={Reply}
