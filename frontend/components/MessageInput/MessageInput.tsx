@@ -5,7 +5,6 @@ import { Image as ImageIcon, Loader2, Pencil, Reply, Send, X } from "lucide-reac
 import { useComposerStore } from "@/store/useComposerStore";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import imageCompression from "browser-image-compression";
 
 
 
@@ -22,42 +21,49 @@ const MessageInput = () => {
     const { replyingTo, editing, closeComposer } = useComposerStore();
 
 
-    // FileReader.readAsDataURL fails intermittently in the wild (WebKit detaches
-    // file entries, huge raw photos on iOS). One automatic retry usually succeeds.
-    const readAsDataUrl = (blob: Blob, retries = 1): Promise<string> =>
+    // Decode + downscale to a small JPEG data URL in ONE native pass:
+    // Image element (the most battle-tested decoder there is) -> canvas -> toDataURL.
+    // No Web Worker (cannot silently hang) and no FileReader on the main path.
+    const toSmallDataUrl = (file: File): Promise<string> =>
         new Promise((resolve, reject) => {
-            const attempt = (left: number) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result as string);
-                reader.onerror = () => {
-                    if (left > 0) setTimeout(() => attempt(left - 1), 250);
-                    else reject(new Error("read failed"));
-                };
-                reader.readAsDataURL(blob);
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            const fail = (msg: string) => {
+                URL.revokeObjectURL(url);
+                reject(new Error(msg));
             };
-            attempt(retries);
+            img.onload = () => {
+                try {
+                    const max = 500; // matches the old compression target
+                    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+                    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+                    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) { fail("canvas unavailable"); return; }
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+                    URL.revokeObjectURL(url);
+                    if (!dataUrl || dataUrl.length < 100) { fail("empty canvas"); return; }
+                    resolve(dataUrl);
+                } catch {
+                    fail("canvas failed");
+                }
+            };
+            img.onerror = () => fail("decode failed");
+            img.src = url;
         });
 
-    // blob -> small data URL; main-thread fallback when the worker hangs
-    const toSmallDataUrl = async (file: File): Promise<string> => {
-        const options = { maxSizeMB: 0.05, maxWidthOrHeight: 500, useWebWorker: true };
-        try {
-            const compressed = await Promise.race([
-                imageCompression(file, options),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 3500)),
-            ]);
-            if (compressed) return await readAsDataUrl(compressed);
-        } catch { /* fall through to the no-worker path */ }
-        try {
-            // no worker = main thread: slower but immune to the silent worker hang
-            const compressed = await Promise.race([
-                imageCompression(file, { ...options, useWebWorker: false }),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
-            ]);
-            if (compressed) return await readAsDataUrl(compressed);
-        } catch { /* last resort below */ }
-        return await readAsDataUrl(file); // raw (one retry inside)
-    };
+    // last-resort raw read (only reached if canvas itself failed)
+    const readAsDataUrl = (blob: Blob): Promise<string> =>
+        new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error("read failed"));
+            reader.readAsDataURL(blob);
+        });
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target;
@@ -75,11 +81,17 @@ const MessageInput = () => {
 
         setImgBusy(true);
         try {
-            const dataUrl = await toSmallDataUrl(file);
+            let dataUrl: string;
+            try {
+                dataUrl = await toSmallDataUrl(file);
+            } catch {
+                // canvas could not run/decode - try the bytes directly
+                dataUrl = await readAsDataUrl(file);
+            }
             setImagePreview(dataUrl);
         } catch (err) {
             console.log("image processing failed, error is ==> ", err);
-            toast.error("Could not process the image. Try another one.");
+            toast.error("This image format is not supported by your browser.");
         } finally {
             setImgBusy(false);
         }
