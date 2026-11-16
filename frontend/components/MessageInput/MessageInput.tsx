@@ -156,15 +156,15 @@ const MessageInput = () => {
 
 
     return (
-        <div className="p-3 sm:p-4 w-full border-t border-white/10 bg-white/[0.05] backdrop-blur-2xl">
+        <div className="p-3 sm:p-4 w-full border-t border-base-300 bg-base-100">
             {(replyingTo || editing) && (
-                <div className="mb-3 flex items-center gap-3 glass-soft rounded-xl px-3 py-2 border-l-4 border-primary">
+                <div className="mb-3 flex items-center gap-3 bg-base-200/80 rounded-xl px-3 py-2 border-l-4 border-primary">
                     {editing ? <Pencil className="size-4 shrink-0 text-primary" /> : <Reply className="size-4 shrink-0 text-primary" />}
                     <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium text-primary">
                             {editing ? "Editing message" : "Replying to " + (replyingTo?.senderId === selectedUser?._id ? selectedUser?.fullName : "yourself")}
                         </div>
-                        <div className="text-sm text-dim truncate">
+                        <div className="text-sm text-base-content/60 truncate">
                             {(editing || replyingTo)?.text || "📷 Image"}
                         </div>
                     </div>
@@ -179,7 +179,7 @@ const MessageInput = () => {
                         <img
                             src={imagePreview}
                             alt="Selected image preview"
-                            className="w-20 h-20 object-cover rounded-xl border border-white/20 shadow-[0_8px_24px_rgb(7_12_32/0.4)]"
+                            className="w-20 h-20 object-cover rounded-xl border border-base-300"
                         />
                         <button
                             onClick={removeImage}
@@ -191,7 +191,7 @@ const MessageInput = () => {
                             <X className="size-3.5" />
                         </button>
                     </div>
-                    <span className="text-sm text-dim">Ready to send</span>
+                    <span className="text-sm text-base-content/50">Ready to send</span>
                 </div>
             )}
 
@@ -199,12 +199,12 @@ const MessageInput = () => {
                 onSubmit={handleSendMessage}
                 className="flex items-end gap-2"
             >
-                <div className="flex-1 glass-soft rounded-3xl flex items-end gap-1 px-2 py-1.5 border border-white/12
-                    focus-within:border-primary/60 focus-within:shadow-[0_0_0_3px_rgb(92_120_245/0.18)] transition-shadow">
+                <div className="flex-1 bg-base-200 rounded-3xl flex items-end gap-1 px-2 py-1.5
+                    focus-within:ring-2 focus-within:ring-primary/40 transition-shadow">
                     <textarea
                         rows={1}
                         className="flex-1 bg-transparent resize-none outline-none px-3 py-2.5
-                            text-base max-h-32 text-pearl placeholder:text-white/35"
+                            text-base max-h-32 placeholder:text-base-content/40"
                         placeholder="Type a message..."
                         value={text}
                         onChange={(e) => setText(e.target.value)}
@@ -231,7 +231,7 @@ const MessageInput = () => {
                         type="button"
                         aria-label="Attach an image"
                         disabled={imgBusy}
-                        className="p-2.5 rounded-full text-white/50 hover:text-cyan hover:bg-white/10
+                        className="p-2.5 rounded-full text-zinc-400 hover:text-primary hover:bg-primary/10
                             transition-colors shrink-0 disabled:opacity-50"
                         onClick={() => fileInputRef.current?.click()}
                     >
@@ -246,12 +246,10 @@ const MessageInput = () => {
                     disabled={!canSend}
                     aria-label="Send message"
                     className="size-12 shrink-0 rounded-full flex items-center justify-center
-                        text-primary-content
+                        text-primary-content shadow-md
                         transition-all duration-150
-                        enabled:bg-gradient-to-br enabled:from-[#5C78F5] enabled:to-[#8066E8]
-                        enabled:shadow-[0_8px_28px_rgb(92_120_245/0.55)]
-                        enabled:hover:scale-105 enabled:active:scale-95
-                        disabled:bg-white/10 disabled:text-white/30"
+                        enabled:bg-primary enabled:hover:scale-105 enabled:active:scale-95
+                        disabled:bg-base-300 disabled:text-base-content/40"
                 >
                     <Send size={20} className="-ml-0.5 mt-0.5" />
                 </button>

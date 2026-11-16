@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import "./glass.css";
-import "./glass.css";
 import Navbar from "@/components/shared/Navbar/Navbar";
 import CustomLayout from "@/components/shared/CustomLayout";
 
@@ -22,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#101B43",
+  themeColor: "#0d9488",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

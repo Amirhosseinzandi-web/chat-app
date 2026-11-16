@@ -131,14 +131,14 @@ const SettingsComponent = () => {
 
                 {/* ================= Notifications ================= */}
                 <div className="flex flex-col gap-1">
-                    <h2 className="text-lg font-semibold text-pearl">Notifications</h2>
-                    <p className="text-sm text-dim">
+                    <h2 className="text-lg font-semibold">Notifications</h2>
+                    <p className="text-sm text-base-content/70">
                         Get a push notification for new messages - even when the app is closed
                         (works on installed apps on phones; on a desktop browser, keep a tab open).
                     </p>
                 </div>
 
-                <div className="rounded-xl glass-panel p-4 space-y-4">
+                <div className="rounded-xl border border-base-300 bg-base-100 p-4 space-y-4 shadow-sm">
                     {/* master switch: app-level mute (Telegram-style) */}
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
@@ -224,7 +224,7 @@ const SettingsComponent = () => {
                 {/* ================= Install App ================= */}
                 <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-semibold">Install app</h2>
-                    <p className="text-sm text-dim">
+                    <p className="text-sm text-base-content/70">
                         Install Chatty to use it like a native app - full screen, icon on your home screen,
                         and the best notifications.
                     </p>
@@ -278,7 +278,7 @@ const SettingsComponent = () => {
                 {/* ================= Theme ================= */}
                 <div className="flex flex-col gap-1">
                     <h2 className="text-lg font-semibold">Theme</h2>
-                    <p className="text-sm text-dim">Choose a theme for your chat interface</p>
+                    <p className="text-sm text-base-content/70">Choose a theme for your chat interface</p>
                 </div>
 
                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
@@ -308,7 +308,7 @@ const SettingsComponent = () => {
 
                 {/* Preview Section */}
                 <h3 className="text-lg font-semibold mb-3">Preview</h3>
-                <div className="rounded-xl glass-panel overflow-hidden shadow-lg">
+                <div className="rounded-xl border border-base-300 overflow-hidden bg-base-100 shadow-lg">
                     <div className="p-4 bg-base-200">
                         <div className="max-w-lg mx-auto">
                             <div className="bg-base-100 rounded-xl shadow-sm overflow-hidden">

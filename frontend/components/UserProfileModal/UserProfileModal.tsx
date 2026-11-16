@@ -37,13 +37,13 @@ const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
             onClick={onClose}
         >
             <div
-                className="w-full max-w-sm glass-panel rounded-2xl p-6 modal-pop"
+                className="w-full max-w-sm bg-base-100 rounded-2xl shadow-2xl p-6 modal-pop"
                 onClick={(e) => e.stopPropagation()}
             >
                 {!confirming ? (
                     <>
                         <div className="flex items-start justify-between">
-                            <h3 className="text-lg font-semibold text-pearl">Profile</h3>
+                            <h3 className="text-lg font-semibold">Profile</h3>
                             <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Close">
                                 <X className="size-4" />
                             </button>
@@ -54,22 +54,22 @@ const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
                                 <img
                                     src={user.profilePic || "/avatar.png"}
                                     alt={user.fullName}
-                                    className="size-24 rounded-full object-cover border-2 border-white/25 shadow-[0_0_30px_rgb(92_120_245/0.45)]"
+                                    className="size-24 rounded-full object-cover border-2 border-base-300"
                                 />
                                 {isSaved && (
-                                    <span className="absolute bottom-0 right-0 bg-primary text-primary-content rounded-full p-1.5 border-2 border-[#101B43]">
+                                    <span className="absolute bottom-0 right-0 bg-primary text-primary-content rounded-full p-1.5 border-2 border-base-100">
                                         <Bookmark className="size-4" />
                                     </span>
                                 )}
                             </div>
 
                             <div className="text-center">
-                                <div className="text-xl font-semibold text-pearl">{user.fullName}</div>
-                                <div className="text-sm text-dim mt-0.5">
+                                <div className="text-xl font-semibold">{user.fullName}</div>
+                                <div className="text-sm text-base-content/60 mt-0.5">
                                     {isSaved ? "Your personal cloud" : isOnline ? "Online" : "Offline"}
                                 </div>
                                 {user.email && (
-                                    <div className="flex items-center justify-center gap-1.5 text-sm text-dim mt-2">
+                                    <div className="flex items-center justify-center gap-1.5 text-sm text-base-content/60 mt-2">
                                         <Mail className="size-4" />
                                         <span>{user.email}</span>
                                     </div>
@@ -91,13 +91,13 @@ const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
                 ) : (
                     <>
                         <div className="flex items-start justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-pearl">Clear history?</h3>
+                            <h3 className="text-lg font-semibold">Clear history?</h3>
                             <button onClick={onClose} className="btn btn-ghost btn-sm btn-circle" aria-label="Close">
                                 <X className="size-4" />
                             </button>
                         </div>
 
-                        <p className="text-sm text-dim mb-5">
+                        <p className="text-sm text-base-content/60 mb-5">
                             {isSaved
                                 ? "This affects your saved messages only."
                                 : "Choose what you want to delete."}

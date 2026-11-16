@@ -25,9 +25,9 @@ const Navbar = () => {
 
 
     return (
-        <header className="fixed w-full top-0 z-40">
-            <div className="absolute inset-0 glass-panel rounded-none border-x-0 border-t-0" />
-            <div className="relative">
+        <header
+            className="bg-base-100 border-b border-base-300 fixed w-full top-0 z-40 backdrop-blur-lg bg-base-100/80"
+        >
             <div className="container mx-auto px-4 h-16">
                 <div className="flex items-center justify-between h-full">
                     <div className="flex items-center gap-8">
@@ -42,7 +42,7 @@ const Navbar = () => {
                     <div className="flex items-center gap-2">
                         <Link
                             href="/settings"
-                            className="btn btn-sm gap-2 glass-item border-0 text-pearl"
+                            className="btn btn-sm gap-2 transition-colors"
                         >
                             <Settings className="w-4 h-4" />
                             <span className="hidden sm:inline">Settings</span>
@@ -51,7 +51,7 @@ const Navbar = () => {
                         {authUser && (
                             <div className="flex gap-2">
                                 {authUser.role === "admin" && (
-                                    <Link href="/admin" className="btn btn-sm gap-2 glass-item border-0 text-pearl" aria-label="Admin panel">
+                                    <Link href="/admin" className="btn btn-sm gap-2" aria-label="Admin panel">
                                         <Shield className="size-4" />
                                         <span className="hidden sm:inline">Admin</span>
                                     </Link>
@@ -60,7 +60,7 @@ const Navbar = () => {
                                     <User className="size-5" />
                                     <span className="hidden sm:inline">Profile</span>
                                 </Link>
-                                <button className="flex gap-2 items-center glass-item px-3 py-1.5 text-pearl" onClick={logOut}>
+                                <button className="flex gap-2 items-center" onClick={logOut}>
                                     <LogOut className="size-5" />
                                     <span className="hidden sm:inline">Logout</span>
                                 </button>
@@ -71,7 +71,6 @@ const Navbar = () => {
 
 
                 </div>
-            </div>
             </div>
         </header>
     );

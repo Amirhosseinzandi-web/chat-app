@@ -48,7 +48,7 @@ const MenuItem = ({ icon: Icon, label, danger, onClick }: MenuItemProps) => (
         onClick={onClick}
         className={
             "flex items-center gap-3 w-full px-3.5 py-2.5 text-sm text-left transition-colors " +
-            (danger ? "text-red-400 hover:bg-red-400/10" : "text-pearl hover:bg-white/10")
+            (danger ? "text-error hover:bg-error/10" : "hover:bg-base-200")
         }
     >
         <Icon className="size-4 shrink-0" />
@@ -174,10 +174,10 @@ const MessageRow = ({
                     }}
                     style={{ touchAction: "auto" }}
                     className={
-                        "chat-bubble rounded-2xl no-touch-callout select-none px-3.5 py-2 shadow-[0_6px_24px_rgb(7_12_32/0.35)] " +
+                        "chat-bubble rounded-2xl no-touch-callout select-none " +
                         (isOwn
-                            ? "text-pearl rounded-br-md bg-gradient-to-br from-[#5C78F5]/85 to-[#8066E8]/80 border border-white/25 backdrop-blur-xl"
-                            : "text-pearl rounded-bl-md bg-white/[0.09] border border-white/15 backdrop-blur-xl")
+                            ? "bg-primary text-primary-content rounded-br-md"
+                            : "bg-base-100 rounded-bl-md")
                     }
                 >
                     {quoted && (
@@ -235,7 +235,7 @@ const MessageRow = ({
                     />
                     <div
                         ref={menuRef}
-                        className="fixed z-50 menu-pop w-52 glass-panel rounded-xl py-1"
+                        className="fixed z-50 menu-pop w-52 bg-base-100 rounded-xl shadow-2xl border border-base-300 py-1"
                         style={{ left: menuPos?.x ?? menu.x, top: menuPos?.y ?? menu.y }}
                     >
                         <MenuItem

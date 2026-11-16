@@ -47,7 +47,7 @@ const AdminPanel = () => {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-base-200">
         <span className="loading loading-ring loading-lg"></span>
       </div>
     );
@@ -55,8 +55,8 @@ const AdminPanel = () => {
 
   if (!authUser || authUser.role !== "admin") {
     return (
-      <div className="min-h-[100dvh] flex items-center justify-center p-6">
-        <div className="glass-panel rounded-xl p-8 text-center max-w-sm">
+      <div className="min-h-[100dvh] flex items-center justify-center bg-base-200 p-6">
+        <div className="bg-base-100 rounded-xl shadow-lg p-8 text-center max-w-sm">
           <h1 className="text-xl font-bold mb-2">Access denied</h1>
           <p className="text-base-content/60 text-sm">You do not have permission to view this page.</p>
         </div>
@@ -105,22 +105,22 @@ const AdminPanel = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="glass-panel rounded-xl p-4 text-center">
+        <div className="bg-base-100 rounded-xl p-4 text-center shadow">
           <div className="text-2xl font-bold">{stats?.users ?? "-"}</div>
           <div className="text-xs text-base-content/60">Users</div>
         </div>
-        <div className="glass-panel rounded-xl p-4 text-center">
+        <div className="bg-base-100 rounded-xl p-4 text-center shadow">
           <div className="text-2xl font-bold">{stats?.messages ?? "-"}</div>
           <div className="text-xs text-base-content/60">Messages</div>
         </div>
-        <div className="glass-panel rounded-xl p-4 text-center">
+        <div className="bg-base-100 rounded-xl p-4 text-center shadow">
           <div className="text-2xl font-bold">{stats?.online ?? "-"}</div>
           <div className="text-xs text-base-content/60">Online now</div>
         </div>
       </div>
 
       {/* Users table */}
-      <div className="glass-panel rounded-xl overflow-x-auto mb-10">
+      <div className="bg-base-100 rounded-xl shadow overflow-x-auto mb-10">
         <table className="table table-zebra">
           <thead>
             <tr>
@@ -166,7 +166,7 @@ const AdminPanel = () => {
       </div>
 
       {/* Danger zone */}
-      <div className="glass-panel rounded-xl p-6 space-y-4">
+      <div className="bg-base-100 rounded-xl shadow p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Users className="size-5 text-error" />
           <h2 className="font-bold">Danger zone</h2>

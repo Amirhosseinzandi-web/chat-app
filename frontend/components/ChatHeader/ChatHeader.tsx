@@ -20,10 +20,10 @@ const ChatHeader = ({ onOpenProfile }: Props) => {
     const isMuted = !!selectedUser && !isSaved && !!mutedChats[selectedUser._id];
     const isOnline = !!selectedUser?._id && !isSaved && onlineUsers.includes(selectedUser._id);
 
-    const statusClass = isSaved ? "text-dim" : isOnline ? "text-cyan font-medium" : "text-dim";
+    const statusClass = isSaved ? "text-base-content/60" : isOnline ? "text-primary" : "text-base-content/70";
 
     return (
-        <div className="p-3 sm:p-4 border-b border-white/10 bg-white/[0.05] backdrop-blur-2xl">
+        <div className="p-3 sm:p-4 border-b border-base-300">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
                     {/* Back button - mobile only (returns to the contact list) */}
@@ -47,7 +47,7 @@ const ChatHeader = ({ onOpenProfile }: Props) => {
                                 alt={selectedUser?.fullName}
                             />
                             {isSaved && (
-                                <span className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-content rounded-full p-1 border-2 border-[#101B43] shadow-[0_0_10px_rgb(92_120_245/0.6)]">
+                                <span className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-content rounded-full p-1 border-2 border-base-100">
                                     <Bookmark className="size-3" />
                                 </span>
                             )}
@@ -56,7 +56,7 @@ const ChatHeader = ({ onOpenProfile }: Props) => {
 
                     {/* User info */}
                     <div className="min-w-0">
-                        <h3 className="font-medium truncate text-pearl">{isSaved ? "Saved Messages" : selectedUser?.fullName}</h3>
+                        <h3 className="font-medium truncate">{isSaved ? "Saved Messages" : selectedUser?.fullName}</h3>
                         <p className={"text-sm " + statusClass}>
                             {isSaved ? "Your personal cloud" : isOnline ? "Online" : "Offline"}
                         </p>
