@@ -22,48 +22,67 @@ const MessageInput = () => {
     const { replyingTo, editing, closeComposer } = useComposerStore();
 
 
+    // FileReader.readAsDataURL fails intermittently in the wild (WebKit detaches
+    // file entries, huge raw photos on iOS). One automatic retry usually succeeds.
+    const readAsDataUrl = (blob: Blob, retries = 1): Promise<string> =>
+        new Promise((resolve, reject) => {
+            const attempt = (left: number) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => {
+                    if (left > 0) setTimeout(() => attempt(left - 1), 250);
+                    else reject(new Error("read failed"));
+                };
+                reader.readAsDataURL(blob);
+            };
+            attempt(retries);
+        });
+
+    // blob -> small data URL; main-thread fallback when the worker hangs
+    const toSmallDataUrl = async (file: File): Promise<string> => {
+        const options = { maxSizeMB: 0.05, maxWidthOrHeight: 500, useWebWorker: true };
+        try {
+            const compressed = await Promise.race([
+                imageCompression(file, options),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 3500)),
+            ]);
+            if (compressed) return await readAsDataUrl(compressed);
+        } catch { /* fall through to the no-worker path */ }
+        try {
+            // no worker = main thread: slower but immune to the silent worker hang
+            const compressed = await Promise.race([
+                imageCompression(file, { ...options, useWebWorker: false }),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+            ]);
+            if (compressed) return await readAsDataUrl(compressed);
+        } catch { /* last resort below */ }
+        return await readAsDataUrl(file); // raw (one retry inside)
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target;
         const file = input.files?.[0];
-        // reset immediately so picking the SAME file again still fires "change"
-        input.value = "";
 
         if (!file?.type.startsWith("image/")) {
+            input.value = "";
             toast.error("Please select an image file.");
             return;
         }
 
+        // IMPORTANT: clear the input in a later task. Resetting it synchronously
+        // can detach the File on WebKit/iOS and make reads fail intermittently.
+        setTimeout(() => { input.value = ""; }, 0);
+
         setImgBusy(true);
-        const options = {
-            maxSizeMB: 0.05,
-            maxWidthOrHeight: 500,
-            useWebWorker: true,
-        };
-
-        let source: Blob = file;
         try {
-            // the compression worker can hang silently on some browsers
-            // (older iOS Safari, PWA webviews) -> race it with a timeout and
-            // fall back to the raw file instead of doing "nothing" forever
-            const compressed = await Promise.race([
-                imageCompression(file, options),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
-            ]);
-            if (compressed) source = compressed;
+            const dataUrl = await toSmallDataUrl(file);
+            setImagePreview(dataUrl);
         } catch (err) {
-            console.log("compression failed, using raw file, error is ==> ", err);
+            console.log("image processing failed, error is ==> ", err);
+            toast.error("Could not process the image. Try another one.");
+        } finally {
+            setImgBusy(false);
         }
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            setImagePreview(reader.result as string);
-            setImgBusy(false);
-        };
-        reader.onerror = () => {
-            toast.error("Could not read the image.");
-            setImgBusy(false);
-        };
-        reader.readAsDataURL(source);
     }
 
 
@@ -121,7 +140,7 @@ const MessageInput = () => {
     }
 
 
-    const canSend = (!!text.trim() || !!imagePreview) && !isSendingMessage && !isMessagesLoading;
+    const canSend = (!!text.trim() || !!imagePreview) && !isSendingMessage && !isMessagesLoading && !imgBusy;
 
 
     return (
