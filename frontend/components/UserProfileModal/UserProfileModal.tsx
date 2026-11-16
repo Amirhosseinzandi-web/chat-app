@@ -15,8 +15,10 @@ type Props = {
 
 
 const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
-    const { clearConversation } = useChatStore();
+    const { clearConversation, selectedUser } = useChatStore();
     const { authUser } = useAuthStore();
+    // clearing history only makes sense for the conversation that is actually open
+    const isCurrentChat = !!selectedUser && selectedUser._id === user._id;
     const [confirming, setConfirming] = useState(false);
     const [busy, setBusy] = useState<"me" | "all" | null>(null);
 
@@ -75,6 +77,7 @@ const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
                             </div>
                         </div>
 
+                        {isCurrentChat && (
                         <button
                             onClick={() => setConfirming(true)}
                             disabled={user._id === authUser?._id && !isSaved}
@@ -83,6 +86,7 @@ const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
                             <Trash2 className="size-4" />
                             {isSaved ? "Delete all saved messages" : "Clear history"}
                         </button>
+                        )}
                     </>
                 ) : (
                     <>
