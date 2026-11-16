@@ -1,7 +1,7 @@
 "use client"
 
 import { useChatStore } from "@/store/useChatStore";
-import { Image as ImageIcon, Pencil, Reply, Send, X } from "lucide-react";
+import { Image as ImageIcon, Loader2, Pencil, Reply, Send, X } from "lucide-react";
 import { useComposerStore } from "@/store/useComposerStore";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -13,6 +13,7 @@ import imageCompression from "browser-image-compression";
 const MessageInput = () => {
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imgBusy, setImgBusy] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const textRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -22,36 +23,47 @@ const MessageInput = () => {
 
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+        const input = e.target;
+        const file = input.files?.[0];
+        // reset immediately so picking the SAME file again still fires "change"
+        input.value = "";
 
         if (!file?.type.startsWith("image/")) {
             toast.error("Please select an image file.");
-            return
+            return;
         }
 
+        setImgBusy(true);
         const options = {
             maxSizeMB: 0.05,
             maxWidthOrHeight: 500,
             useWebWorker: true,
         };
 
+        let source: Blob = file;
         try {
-            const compressedFile = await imageCompression(file, options);
-            const reader = new FileReader();
-            reader.readAsDataURL(compressedFile);
-
-            reader.onload = () => {
-                const base64Image = reader.result;
-                setImagePreview(base64Image as string);
-            };
-
+            // the compression worker can hang silently on some browsers
+            // (older iOS Safari, PWA webviews) -> race it with a timeout and
+            // fall back to the raw file instead of doing "nothing" forever
+            const compressed = await Promise.race([
+                imageCompression(file, options),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+            ]);
+            if (compressed) source = compressed;
         } catch (err) {
-            // fallback: some browsers (esp. older iOS Safari) fail the worker - use the raw file
             console.log("compression failed, using raw file, error is ==> ", err);
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => setImagePreview(reader.result as string);
         }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            setImagePreview(reader.result as string);
+            setImgBusy(false);
+        };
+        reader.onerror = () => {
+            toast.error("Could not read the image.");
+            setImgBusy(false);
+        };
+        reader.readAsDataURL(source);
     }
 
 
@@ -187,11 +199,14 @@ const MessageInput = () => {
                     <button
                         type="button"
                         aria-label="Attach an image"
+                        disabled={imgBusy}
                         className="p-2.5 rounded-full text-zinc-400 hover:text-primary hover:bg-primary/10
-                            transition-colors shrink-0"
+                            transition-colors shrink-0 disabled:opacity-50"
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        <ImageIcon size={22} />
+                        {imgBusy
+                            ? <Loader2 size={22} className="animate-spin text-primary" />
+                            : <ImageIcon size={22} />}
                     </button>
                 </div>
 
