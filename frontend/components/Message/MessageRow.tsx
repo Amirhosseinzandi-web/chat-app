@@ -4,7 +4,8 @@ import { formatMessageTime } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { MessagesType } from "@/store/useChatStore";
 import { Copy, Forward, ListChecks, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useLongPress } from "@/hooks/useLongPress";
 
@@ -54,13 +55,17 @@ const MessageRow = ({
 }: Props) => {
     const { authUser } = useAuthStore();
     const [menu, setMenu] = useState<Pos | null>(null);
+    const openedAtRef = useRef(0);
 
     const isOwn = message.senderId === authUser?._id;
 
     const openMenu = (pos: Pos) => {
         // in select mode a long press adds/removes instead of opening the menu
         if (selecting) onToggleSelect(message);
-        else setMenu(pos);
+        else {
+            openedAtRef.current = Date.now();
+            setMenu(pos);
+        }
     };
 
     const { handlers, pressing } = useLongPress({ onLongPress: openMenu });
@@ -132,6 +137,7 @@ const MessageRow = ({
                     onClick={() => onBubbleClick(message)}
                     onContextMenu={(e) => {
                         e.preventDefault(); // no browser menu; ours instead
+                        e.stopPropagation();
                         if (!selecting) setMenu({ x: e.clientX, y: e.clientY });
                     }}
                     style={{ touchAction: "auto" }}
@@ -157,15 +163,22 @@ const MessageRow = ({
                 </div>
             </div>
 
-            {/* floating context menu (sibling of the row: clicks here never retrigger it) */}
-            {menu && (
+            {/* floating context menu, portaled to <body> so the transformed
+                chat panel (chat-panel-enter) can NOT offset position:fixed */}
+            {menu && typeof document !== "undefined" &&
+                createPortal(
                 <>
                     <div
                         className="fixed inset-0 z-40"
-                        onClick={() => setMenu(null)}
-                        onContextMenu={(e) => {
-                            e.preventDefault();
+                        onClick={() => {
+                            // ignore the synthetic click right after opening (finger release)
+                            if (Date.now() - openedAtRef.current < 400) return;
                             setMenu(null);
+                        }}
+                        onContextMenu={(e) => {
+                            // mobile: the OS fires contextmenu onto this overlay
+                            // while the finger is still down - swallow it, do NOT close
+                            e.preventDefault();
                         }}
                     />
                     <div
@@ -193,7 +206,9 @@ const MessageRow = ({
                         />
                     </div>
                 </>
-            )}
+                ,
+                document.body
+                )}
         </>
     );
 };
