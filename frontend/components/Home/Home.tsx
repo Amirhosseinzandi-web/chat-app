@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import ChatContainerComponent from "@/components/ChatContainer/ChatContainer";
 import NoChatSelectedComponent from "@/components/NoChatSelected/NoChatSelected";
 import SidebarComponent from "@/components/Sidebar/Sidebar";
-import RailNav from "@/components/shared/RailNav";
 import { useChatStore } from "@/store/useChatStore";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
@@ -106,8 +105,6 @@ const HomeComponent = () => {
             <div className="flex items-center justify-center pt-16 px-0 sm:px-4 h-full">
                 <div className="glass-panel w-full sm:max-w-6xl sm:rounded-2xl h-full sm:h-[calc(100dvh-8rem)] overflow-hidden sm:my-8">
                     <div className="flex h-full sm:rounded-lg overflow-hidden">
-                        {/* desktop nav rail (logo / destinations / profile) */}
-                        <RailNav />
                         {/* mobile: show list when no chat selected, chat when selected. desktop: always show sidebar */}
                         <div className={selectedUser ? "hidden lg:flex w-full lg:w-auto" : "flex w-full lg:w-auto"}>
                             <SidebarComponent />
