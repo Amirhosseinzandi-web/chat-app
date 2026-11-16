@@ -140,7 +140,7 @@ const ChatContainerComponent = () => {
 
             <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-6 bg-base-200/40">
                 <div className="flex flex-col gap-3 max-w-3xl mx-auto">
-                    {messages?.map((item) => (
+                    {messages?.map((item, idx) => (
                         <MessageRow
                             key={item._id}
                             message={item}
@@ -148,6 +148,7 @@ const ChatContainerComponent = () => {
                             selecting={selecting}
                             otherUserPic={otherUserPic}
                             allMessages={messages}
+                            nearBottom={idx >= messages.length - 3}
                             onToggleSelect={toggleSelect}
                             onOpenSenderProfile={(senderId) => setProfileId(senderId)}
                             onDelete={(m) => setDeleteFor(m)}

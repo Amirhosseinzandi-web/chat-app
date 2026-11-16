@@ -30,6 +30,8 @@ type Props = {
     otherUserPic: string;
     /** full message list (to resolve the reply quote) */
     allMessages: Msg[];
+    /** one of the last 3 messages -> menu opens to the middle, above the pointer */
+    nearBottom?: boolean;
     /** delete-for-everyone permission (sender only) - drives the Delete item */
     canDeleteForAll?: boolean;
 };
@@ -57,7 +59,7 @@ const MenuItem = ({ icon: Icon, label, danger, onClick }: MenuItemProps) => (
 const MessageRow = ({
     message, selected, selecting,
     onToggleSelect, onOpenSenderProfile, onDelete, onForward, onBubbleClick, onImageClick,
-    otherUserPic, allMessages,
+    otherUserPic, allMessages, nearBottom,
 }: Props) => {
     const { authUser } = useAuthStore();
     const { setReplyingTo, setEditing } = useComposerStore();
@@ -110,12 +112,19 @@ const MessageRow = ({
         const el = menuRef.current;
         const w = el?.offsetWidth ?? 208;
         const h = el?.offsetHeight ?? 240;
-        const left = Math.max(8, Math.min(menu.x, window.innerWidth - w - 8));
-        // near the bottom edge this flips the menu to open ABOVE the pointer,
-        // exactly like Telegram
-        const top = Math.max(8, Math.min(menu.y, window.innerHeight - h - 8));
+        // for the last few messages the user asked for the menu to sit on the
+        // opposite side of the bubbles and slightly higher, so it never covers
+        // the composer or hugs the screen edge
+        let x = menu.x;
+        let y = menu.y;
+        if (nearBottom) {
+            x = isOwn ? menu.x - w - 12 : menu.x + w + 12; // toward the middle
+            y = menu.y - h - 12;                            // above the pointer
+        }
+        const left = Math.max(8, Math.min(x, window.innerWidth - w - 8));
+        const top = Math.max(8, Math.min(y, window.innerHeight - h - 8));
         setMenuPos({ x: left, y: top });
-    }, [menu]);
+    }, [menu, nearBottom, isOwn]);
 
     return (
         <>
