@@ -2,7 +2,8 @@
 
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore, type UsersType } from "@/store/useChatStore";
-import { Bookmark, Users } from "lucide-react";
+import { Bookmark, UserPlus, Users } from "lucide-react";
+import FindFriend from "@/components/Friend/FindFriend";
 import { useEffect, useState } from "react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 
@@ -10,6 +11,7 @@ import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 const SidebarComponent = () => {
     const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+    const [showFinder, setShowFinder] = useState(false);
     const { onlineUsers, authUser } = useAuthStore();
 
     // the list includes ourselves; count only OTHER online users
@@ -64,6 +66,14 @@ const SidebarComponent = () => {
                         ({otherOnlineCount} {otherOnlineCount === 1 ? "user" : "users"} online)
                     </span>
                 </div>
+
+                <button
+                    onClick={() => setShowFinder(true)}
+                    className="btn btn-primary btn-sm btn-block gap-2 mt-3"
+                >
+                    <UserPlus className="size-4" />
+                    Find friend
+                </button>
             </div>
 
             <div className="overflow-y-auto w-full py-3">
@@ -134,6 +144,17 @@ const SidebarComponent = () => {
                     </div>
                 )}
             </div>
+
+            {showFinder && (
+                <FindFriend
+                    onClose={() => setShowFinder(false)}
+                    onConnected={(user) => {
+                        // they are contacts now: open the conversation and refresh the list
+                        setSelectedUser({ ...user, email: user.email || "", profilePic: user.profilePic || "" });
+                        getUsers();
+                    }}
+                />
+            )}
         </aside>
     );
 }

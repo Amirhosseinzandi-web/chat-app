@@ -50,6 +50,9 @@ const userSchema = new mongoose.Schema(
 
 
 
+userSchema.index({ username: 1 }, { unique: true, partialFilterExpression: { username: { $type: "string" } } });
+
+
 userSchema.pre("save", async function (next) {
     if (this.isNew || this.isModified("password")) {
         const salt = await bcrypt.genSalt(10);

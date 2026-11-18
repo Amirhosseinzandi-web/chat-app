@@ -10,6 +10,7 @@ type User = {
     _id: string;
     profilePic?: string;
     fullName: string;
+    username?: string | null;
     email: string;
     createdAt: string;
     role?: "user" | "admin";

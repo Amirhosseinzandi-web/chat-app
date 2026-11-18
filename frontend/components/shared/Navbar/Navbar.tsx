@@ -4,6 +4,7 @@ import { useChatStore } from "@/store/useChatStore";
 import { LogOut, MessageSquare, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import NotificationBell from "@/components/Friend/NotificationBell";
 
 
 
@@ -40,6 +41,8 @@ const Navbar = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {authUser && <NotificationBell />}
+
                         <Link
                             href="/settings"
                             className="btn btn-sm gap-2 transition-colors"

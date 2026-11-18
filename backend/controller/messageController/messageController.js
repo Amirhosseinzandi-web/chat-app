@@ -3,15 +3,28 @@ import userModel from "../../models/userModel.js";
 import mongoose from "mongoose";
 import { io, getReciverSocketId, getUserSocketMap } from "../../lib/socket.js";
 import { pushMessageIfOffline } from "../pushController/pushController.js";
+import { areConnected, getConnectedUserIds } from "../../lib/connections.js";
 
 
 
 
 
+// GET /api/message/users - the chat list.
+//
+// PRIVACY: this used to return every account in the database, so anyone who
+// signed up saw all other users (and their names/photos) without any consent.
+// Now it only returns people you are actually connected with: an accepted
+// connection request, or a conversation you already had before this shipped.
+// Reach new people by their @id through the friend search instead.
 export const getUsersForSidebar = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
-        const filteredUsers = await userModel.find({ _id: { $ne: loggedInUserId } }).select("-password");
+        const connectedIds = await getConnectedUserIds(loggedInUserId);
+
+        const filteredUsers = await userModel
+            .find({ _id: { $in: connectedIds } })
+            .select("_id fullName username email profilePic createdAt");
+
         res.status(200).json(filteredUsers);
     } catch (error) {
         console.log(`error in getUsersForSidebar controller, error is ==> ${error}`);
@@ -27,6 +40,15 @@ export const getMessages = async (req, res) => {
 
         const { id: userToChatId } = req.params;
         const myId = req.user._id;
+
+        if (!mongoose.Types.ObjectId.isValid(userToChatId)) {
+            return res.status(400).json({ message: "invalid user id" });
+        }
+        // only contacts may open a conversation (Saved Messages always can)
+        const allowed = await areConnected(myId, userToChatId);
+        if (!allowed) {
+            return res.status(403).json({ message: "not-connected" });
+        }
 
         const messages = await messageModel.find({
             $or: [
@@ -62,6 +84,11 @@ export const sendMessage = async (req, res) => {
         const receiver = await userModel.findById(receiverId).select("_id notificationsEnabled mutedChats");
         if (!receiver) {
             return res.status(404).json({ message: "receiver not found" });
+        }
+        // nobody can message a stranger: a connection request must be accepted first
+        const allowed = await areConnected(senderId, receiverId);
+        if (!allowed) {
+            return res.status(403).json({ message: "not-connected" });
         }
         if (text && typeof text !== "string") {
             return res.status(400).json({ message: "invalid text" });

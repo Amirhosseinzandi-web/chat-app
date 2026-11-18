@@ -7,6 +7,7 @@ import authRoute from "./routes/authRoute.js";
 import messageRoute from "./routes/messageRoute.js";
 import adminRoute from "./routes/adminRoute.js";
 import pushRoute from "./routes/pushRoute.js";
+import friendRoute from "./routes/friendRoute.js";
 import { setVapidKeys } from "./lib/push.js";
 import cors from "cors";
 
@@ -36,6 +37,7 @@ app.use("/api/auth", authRoute)
 app.use("/api/message", messageRoute)
 app.use("/api/admin", adminRoute)
 app.use("/api/push", pushRoute)
+app.use("/api/friend", friendRoute)
 
 // initialize the VAPID keypair (generated once by scripts/generate-vapid-keys.js)
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
