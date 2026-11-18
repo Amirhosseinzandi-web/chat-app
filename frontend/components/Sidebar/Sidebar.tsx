@@ -4,6 +4,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore, type UsersType } from "@/store/useChatStore";
 import { Bookmark, UserPlus, Users } from "lucide-react";
 import FindFriend from "@/components/Friend/FindFriend";
+import UsernameBanner from "@/components/Friend/UsernameBanner";
 import { useEffect, useState } from "react";
 import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 
@@ -74,6 +75,10 @@ const SidebarComponent = () => {
                     <UserPlus className="size-4" />
                     Find friend
                 </button>
+            </div>
+
+            <div className="px-3 pt-3">
+                <UsernameBanner />
             </div>
 
             <div className="overflow-y-auto w-full py-3">

@@ -24,12 +24,12 @@ const UsernameBanner = () => {
     if (!needsId || dismissed) return null;
 
     return (
-        <div className="glass-panel rounded-xl p-3 mb-3">
+        <div className="alert alert-info bg-info/10 border-info/40 rounded-xl p-3 mb-3 grid">
             <div className="flex items-start gap-2">
-                <AtSign className="size-5 text-cyan shrink-0 mt-0.5" />
+                <AtSign className="size-5 text-info shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-pearl">Pick your public id</p>
-                    <p className="text-xs text-dim mt-0.5 mb-2">
+                    <p className="text-sm font-semibold ">Pick your public id</p>
+                    <p className="text-xs text-base-content/60 mt-0.5 mb-2">
                         Friends find you by your id - you have not chosen one yet.
                     </p>
                     <UsernameForm

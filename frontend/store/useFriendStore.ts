@@ -23,6 +23,7 @@ export type AppNotification = {
     body?: string;
     read: boolean;
     createdAt: string;
+    refId?: string | null;
     fromUserId?: PublicUser | string | null;
 };
 

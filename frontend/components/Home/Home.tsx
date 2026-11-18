@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import ChatContainerComponent from "@/components/ChatContainer/ChatContainer";
 import NoChatSelectedComponent from "@/components/NoChatSelected/NoChatSelected";
 import SidebarComponent from "@/components/Sidebar/Sidebar";
-import UsernameBanner from "@/components/Friend/UsernameBanner";
 import { useChatStore } from "@/store/useChatStore";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
@@ -103,11 +102,6 @@ const HomeComponent = () => {
 
     return (
         <div className="h-[100dvh] bg-base-200">
-            <div className="fixed top-16 inset-x-0 z-30 px-3 sm:px-4 pointer-events-none">
-                <div className="max-w-6xl mx-auto pointer-events-auto">
-                    <UsernameBanner />
-                </div>
-            </div>
             <div className="flex items-center justify-center pt-16 px-0 sm:px-4 h-full">
                 <div className="bg-base-100 shadow-cl w-full sm:max-w-6xl sm:rounded-lg h-full sm:h-[calc(100dvh-8rem)]">
                     <div className="flex h-full sm:rounded-lg overflow-hidden">

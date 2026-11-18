@@ -23,7 +23,8 @@ const NotificationBell = () => {
     };
 
     const onAccept = async (n: AppNotification) => {
-        const ok = await acceptRequest(n._id);
+        if (!n.refId) return;
+        const ok = await acceptRequest(n.refId);
         // the new contact belongs in the chat list right away
         if (ok) await getUsers();
     };
@@ -47,28 +48,28 @@ const NotificationBell = () => {
             {open && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-                    <div className="absolute right-0 top-11 z-50 w-72 glass-panel rounded-xl p-2 menu-pop">
+                    <div className="absolute right-0 top-11 z-50 w-72 bg-base-100 rounded-xl shadow-2xl border border-base-300 p-2 menu-pop">
                         <p className="px-2 py-1 text-xs font-medium opacity-60">Notifications</p>
                         {notifications.length === 0 && (
-                            <p className="px-2 py-4 text-sm text-center text-dim">Nothing here yet</p>
+                            <p className="px-2 py-4 text-sm text-center text-base-content/60">Nothing here yet</p>
                         )}
                         <div className="max-h-80 overflow-y-auto space-y-1">
                             {notifications.map((n) => (
-                                <div key={n._id} className="glass-soft rounded-lg p-2">
-                                    <p className="text-sm text-pearl">{n.title}</p>
+                                <div key={n._id} className="bg-base-200 rounded-lg p-2">
+                                    <p className="text-sm ">{n.title}</p>
                                     {n.type === "friend-request" && (
                                         <div className="flex gap-1.5 mt-2">
                                             <button
                                                 className="btn btn-primary btn-xs gap-1 flex-1"
                                                 onClick={() => onAccept(n)}
-                                                disabled={n.read}
+                                                disabled={!n.refId}
                                             >
                                                 <Check className="size-3" /> Accept
                                             </button>
                                             <button
                                                 className="btn btn-ghost btn-xs gap-1 flex-1"
-                                                onClick={() => rejectRequest(n._id)}
-                                                disabled={n.read}
+                                                onClick={() => n.refId && rejectRequest(n.refId)}
+                                                disabled={!n.refId}
                                             >
                                                 <X className="size-3" /> Reject
                                             </button>
