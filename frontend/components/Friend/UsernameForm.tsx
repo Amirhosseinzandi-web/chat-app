@@ -68,7 +68,7 @@ const UsernameForm = ({ initialValue, onSaved }: Props) => {
 
     return (
         <div className="w-full">
-            <label className="input flex items-center gap-2 w-full">
+            <label className="input input-sm flex items-center gap-2 w-full">
                 <span className="opacity-60">@</span>
                 <input
                     type="text"
@@ -84,16 +84,16 @@ const UsernameForm = ({ initialValue, onSaved }: Props) => {
                 {icon}
             </label>
 
-            <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="mt-1.5 flex items-center gap-2">
                 <span className={
-                    "text-xs " +
+                    "text-xs flex-1 min-w-0 truncate " +
                     (state === "free" ? "text-success" :
                         state === "invalid" || state === "taken" || state === "reserved" ? "text-error" : "opacity-60")
                 }>
                     {message}
                 </span>
                 <button
-                    className="btn btn-sm btn-primary"
+                    className="btn btn-sm btn-primary shrink-0"
                     type="button"
                     disabled={state !== "free" && state !== "saving"}
                     onClick={save}

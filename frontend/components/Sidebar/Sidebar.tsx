@@ -77,9 +77,7 @@ const SidebarComponent = () => {
                 </button>
             </div>
 
-            <div className="px-3 pt-3">
-                <UsernameBanner />
-            </div>
+            <UsernameBanner />
 
             <div className="overflow-y-auto w-full py-3">
                 {/* Saved Messages - always first, like Telegram */}
