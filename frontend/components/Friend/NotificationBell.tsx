@@ -82,15 +82,15 @@ const NotificationBell = () => {
 
             {open && (
                 <>
-                    <div className="absolute right-0 top-11 z-50 w-72 bg-base-100 rounded-xl shadow-2xl border border-base-300 p-2 menu-pop">
+                    <div className="fixed inset-x-2 top-16 z-50 bg-base-100 rounded-xl shadow-2xl border border-base-300 p-2 menu-pop sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-72">
                         <p className="px-2 py-1 text-xs font-medium opacity-60">Notifications</p>
                         {notifications.length === 0 && (
                             <p className="px-2 py-4 text-sm text-center text-base-content/60">Nothing here yet</p>
                         )}
                         <div className="max-h-80 overflow-y-auto space-y-1">
                             {notifications.map((n) => (
-                                <div key={n._id} className="bg-base-200 rounded-lg p-2">
-                                    <p className="text-sm ">{n.title}</p>
+                                <div key={n._id} className="bg-base-200 rounded-lg p-2 sm:p-2.5">
+                                    <p className="text-sm leading-snug">{n.title}</p>
                                     {n.type === "friend-request" && (
                                         <div className="flex gap-1.5 mt-2">
                                             <button
