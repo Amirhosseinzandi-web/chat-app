@@ -1,6 +1,7 @@
 import _ from "lodash";
 import userModel from "../../models/userModel.js";
 import bcrypt from "bcrypt"
+import { io, getReciverSocketId } from "../../lib/socket.js"
 
 export const signUp = async (req, res) => {
     try {
@@ -25,6 +26,7 @@ export const signUp = async (req, res) => {
                 _id: user._id,
                 fullName: user.fullName,
                 email: user.email,
+                username: user.username ?? null,
                 profilePic: user.profilePic,
                 role: user.role,
             });
@@ -59,6 +61,7 @@ export const login = async (req, res) => {
             _id: currentUser._id,
             fullName: currentUser.fullName,
             email: currentUser.email,
+            username: currentUser.username ?? null,
             profilePic: currentUser.profilePic,
             role: currentUser.role,
         });
@@ -93,26 +96,67 @@ export const logout = async (req, res) => {
 export const updateProfile = async (req, res) => {
     try {
 
-        const profilePicAddres = req.body.profilePic;
+        const { profilePic, fullName, email } = req.body;
         const userId = req.user._id;
 
-        if (!profilePicAddres) {
-            return res.status(400).json({ message: "profile pic is required" });
+        // at least one editable field must be present
+        if (!profilePic && fullName === undefined && email === undefined) {
+            return res.status(400).json({ message: "nothing to update" });
         }
 
-        const user = await userModel.findById(userId);
+        // build only the fields that are being changed
+        const update = {};
+        if (profilePic) update.profilePic = profilePic;
 
-        if (!user) {
-            return res.status(404).json({ message: "user not found" });
+        if (fullName !== undefined) {
+            const name = String(fullName).trim();
+            if (name.length < 2 || name.length > 40) {
+                return res.status(400).json({ message: "invalid-fullname" });
+            }
+            update.fullName = name;
         }
+
+        if (email !== undefined) {
+            const mail = String(email).trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+                return res.status(400).json({ message: "invalid-email" });
+            }
+            // email must stay unique across accounts (case-insensitive)
+            const taken = await userModel.findOne({ email: mail, _id: { $ne: userId } }).select("_id");
+            if (taken) return res.status(400).json({ message: "email-taken" });
+            update.email = mail;
+        }
+
         const updatedUser = await userModel.findByIdAndUpdate(
             userId,
-            { profilePic: profilePicAddres },
-            { new: true, select: "_id fullName email profilePic createdAt" }
+            update,
+            { new: true, select: "_id fullName email username profilePic createdAt" }
         );
+        if (!updatedUser) {
+            return res.status(404).json({ message: "user not found" });
+        }
         res.status(200).json(updatedUser);
 
+        // live refresh for connected clients only (never broadcast to strangers)
+        const { getConnectedUserIds } = await import("../../lib/connections.js");
+        const contactIds = await getConnectedUserIds(updatedUser._id);
+        for (const contactId of contactIds) {
+            const socketId = getReciverSocketId(contactId);
+            if (socketId) {
+                io.to(socketId).emit("userUpdated", {
+                    _id: updatedUser._id,
+                    fullName: updatedUser.fullName,
+                    email: updatedUser.email,
+                    username: updatedUser.username,
+                    profilePic: updatedUser.profilePic,
+                });
+            }
+        }
+
     } catch (err) {
+        if (err?.code === 11000) {
+            return res.status(400).json({ message: "email-taken" });
+        }
         console.log(`error in updateProfile controller, error is ==> ${err}`);
         return res.status(500).json({ message: "server-error" });
     }

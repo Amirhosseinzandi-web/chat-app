@@ -321,6 +321,7 @@ export const getNotifications = async (req, res) => {
             notifications,
             unread,
             hasUsername: !!me?.username,
+            myUsername: me?.username ?? null,
         });
     } catch (err) {
         console.log(`error in getNotifications, error is ==> ${err}`);

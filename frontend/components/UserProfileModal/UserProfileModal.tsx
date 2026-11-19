@@ -65,6 +65,9 @@ const UserProfileModal = ({ user, isSaved, isOnline, onClose }: Props) => {
 
                             <div className="text-center">
                                 <div className="text-xl font-semibold">{user.fullName}</div>
+                        {user.username && (
+                            <div className="text-sm text-base-content/60">@{user.username}</div>
+                        )}
                                 <div className="text-sm text-base-content/60 mt-0.5">
                                     {isSaved ? "Your personal cloud" : isOnline ? "Online" : "Offline"}
                                 </div>

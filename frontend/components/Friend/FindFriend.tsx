@@ -76,7 +76,7 @@ const FindFriend = ({ onClose, onConnected }: Props) => {
                         />
                         <div className="min-w-0 flex-1">
                             <div className="font-medium truncate ">{result.user.fullName}</div>
-                            <div className="text-sm text-base-content/60 truncate">@{result.user.username}</div>
+                            {result.user.username && <div className="text-sm text-base-content/60 truncate">@{result.user.username}</div>}
                         </div>
 
                         {result.state === "connected" ? (

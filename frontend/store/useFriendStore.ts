@@ -62,11 +62,14 @@ export const useFriendStore = create<FriendStoreType>((set, get) => ({
                 unread: res.data.unread || 0,
                 hasUsername: !!res.data.hasUsername,
             });
-            // keep the auth user in sync so the banner reacts everywhere
+            // keep the auth user in sync so the banner reacts everywhere.
+            // ONLY trust a truthy value: the payload can miss the field on old
+            // backends, and overwriting with undefined caused "@undefined".
             const me = useAuthStore.getState().authUser;
-            if (me && me.username !== res.data.myUsername) {
+            if (me && res.data.myUsername && me.username !== res.data.myUsername) {
                 useAuthStore.setState({ authUser: { ...me, username: res.data.myUsername } });
             }
+            set({ myUsername: res.data.myUsername ?? null });
         } catch (err) {
             console.log("error in fetchNotifications, error is ==> ", err);
         } finally {

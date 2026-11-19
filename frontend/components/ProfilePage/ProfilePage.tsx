@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Camera, Mail, User } from "lucide-react";
+import { AtSign, Camera, Check, Mail, Pencil, User, X } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import UsernameForm from "@/components/Friend/UsernameForm";
 import imageCompression from "browser-image-compression";
 
 const ProfilePageComponent = () => {
@@ -11,6 +12,31 @@ const ProfilePageComponent = () => {
     // auth guard: redirects to /login when there is no user
     const { isCheckingAuth } = useRequireAuth();
     const [selectedImg, setSelectedImg] = useState<string | null>(null);
+
+    // inline profile editing: which field is open, and its draft value
+    const [editing, setEditing] = useState<"name" | "email" | "id" | null>(null);
+    const [draft, setDraft] = useState("");
+
+    const openEdit = (field: "name" | "email" | "id") => {
+        setEditing(field);
+        if (field === "name") setDraft(authUser?.fullName || "");
+        if (field === "email") setDraft(authUser?.email || "");
+    };
+    const closeEdit = () => { setEditing(null); setDraft(""); };
+
+    // save a text field (name or email) through the existing auth update call
+    const saveField = async () => {
+        if (editing === "name") {
+            const name = draft.trim();
+            if (name.length < 2) { return; }
+            await updateProfile({ fullName: name });
+        } else if (editing === "email") {
+            const mail = draft.trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { return; }
+            await updateProfile({ email: mail });
+        }
+        closeEdit();
+    };
 
     if (isCheckingAuth || !authUser) {
         return (
@@ -111,7 +137,25 @@ const ProfilePageComponent = () => {
                                 <User className="w-4 h-4" />
                                 Full Name
                             </div>
-                            <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.fullName}</p>
+                            {editing === "name" ? (
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        className="input input-sm input-bordered w-full"
+                                        value={draft}
+                                        autoFocus
+                                        maxLength={40}
+                                        onChange={(e) => setDraft(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === "Enter") saveField(); if (e.key === "Escape") closeEdit(); }}
+                                    />
+                                    <button className="btn btn-sm btn-primary" onClick={saveField} disabled={draft.trim().length < 2}><Check className="size-4" /></button>
+                                    <button className="btn btn-sm btn-ghost" onClick={closeEdit}><X className="size-4" /></button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="px-4 py-2.5 bg-base-200 rounded-lg border flex-1 min-w-0 truncate">{authUser?.fullName}</p>
+                                    <button className="btn btn-sm btn-ghost btn-circle shrink-0" onClick={() => openEdit("name")} aria-label="Edit name"><Pencil className="size-4" /></button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-1.5">
@@ -119,7 +163,48 @@ const ProfilePageComponent = () => {
                                 <Mail className="w-4 h-4" />
                                 Email Address
                             </div>
-                            <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.email}</p>
+                            {editing === "email" ? (
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        className="input input-sm input-bordered w-full"
+                                        value={draft}
+                                        autoFocus
+                                        type="email"
+                                        onChange={(e) => setDraft(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === "Enter") saveField(); if (e.key === "Escape") closeEdit(); }}
+                                    />
+                                    <button className="btn btn-sm btn-primary" onClick={saveField}><Check className="size-4" /></button>
+                                    <button className="btn btn-sm btn-ghost" onClick={closeEdit}><X className="size-4" /></button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="px-4 py-2.5 bg-base-200 rounded-lg border flex-1 min-w-0 truncate">{authUser?.email}</p>
+                                    <button className="btn btn-sm btn-ghost btn-circle shrink-0" onClick={() => openEdit("email")} aria-label="Edit email"><Pencil className="size-4" /></button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="text-sm text-zinc-400 flex items-center gap-2">
+                                <AtSign className="w-4 h-4" />
+                                Public id
+                            </div>
+                            {editing === "id" ? (
+                                <div>
+                                    <UsernameForm
+                                        initialValue={authUser.username}
+                                        onSaved={closeEdit}
+                                    />
+                                    <button className="btn btn-ghost btn-sm mt-2" onClick={closeEdit}>Cancel</button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="px-4 py-2.5 bg-base-200 rounded-lg border flex-1 min-w-0 truncate">
+                                        {authUser.username ? "@" + authUser.username : "not set yet"}
+                                    </p>
+                                    <button className="btn btn-sm btn-ghost btn-circle shrink-0" onClick={() => openEdit("id")} aria-label="Edit id"><Pencil className="size-4" /></button>
+                                </div>
+                            )}
                         </div>
                     </div>
 

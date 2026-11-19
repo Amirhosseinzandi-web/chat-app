@@ -10,6 +10,7 @@ export type UsersType = {
     email: string
     profilePic: string
     fullName: string
+    username?: string | null
     createdAt?: string
 }
 
@@ -39,7 +40,7 @@ type ChatStoreType = {
     setSelectedUser: (selectedUser: null | UsersType) => void
     subscribeToNewMessages: () => void
     unsubscribeFromNewMessages: () => void
-    sendMessage: (messageData: {}) => Promise<void>
+    sendMessage: (messageData: Record<string, unknown>) => Promise<void>
     editMessage: (messageId: string, text: string) => Promise<void>
     deleteMessage: (messageId: string, scope: "me" | "all") => Promise<void>
     clearConversation: (scope: "me" | "all") => Promise<void>
@@ -103,7 +104,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         try {
             const res = await axiosInstance.post(`/api/message/send/${selectedUser?._id}`, messageData);
             set({ messages: mergeMessages(messages, [res.data]) })
-        } catch (error) {
+        } catch {
             toast.error("something went wrong");
         }
         finally {
@@ -132,6 +133,17 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
                 messages: state.messages.map((m) => (m._id === updated._id ? { ...m, ...updated } : m)),
             }));
         });
+
+        // a contact changed their name/email/avatar -> refresh every list live
+        socket.on("userUpdated", (u: { _id: string; fullName?: string; email?: string; username?: string | null; profilePic?: string }) => {
+            set((state) => ({
+                users: state.users.map((x) => (x._id === u._id ? { ...x, ...u } : x)),
+                selectedUser:
+                    state.selectedUser && state.selectedUser._id === u._id
+                        ? { ...state.selectedUser, ...u }
+                        : state.selectedUser,
+            }));
+        });
     },
 
 
@@ -140,6 +152,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         if (!socket) return
         socket.off("newMessage");
         socket.off("messageEdited");
+        socket.off("userUpdated");
     },
 
     setSelectedUser: (selectedUser) => set({ selectedUser, messages: [] }),
