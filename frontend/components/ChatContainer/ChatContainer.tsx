@@ -67,7 +67,7 @@ const ChatContainerComponent = () => {
     }
 
     const isSaved = !!selectedUser && selectedUser._id === authUser?._id;
-    const otherUserPic = isSaved ? "/avatar.png" : selectedUser?.profilePic || "/avatar.png";
+    const otherUserPic = isSaved ? authUser?.profilePic || "/avatar.png" : selectedUser?.profilePic || "/avatar.png";
 
     // resolve ANY avatar click to a full user object
     let profileUser: UsersType | null = null;

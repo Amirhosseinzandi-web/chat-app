@@ -43,7 +43,7 @@ const ChatHeader = ({ onOpenProfile }: Props) => {
                     >
                         <div className="size-11 rounded-full relative">
                             <img
-                                src={isSaved ? "/avatar.png" : selectedUser?.profilePic || "/avatar.png"}
+                                src={isSaved ? authUser?.profilePic || "/avatar.png" : selectedUser?.profilePic || "/avatar.png"}
                                 alt={selectedUser?.fullName}
                             />
                             {isSaved && (
