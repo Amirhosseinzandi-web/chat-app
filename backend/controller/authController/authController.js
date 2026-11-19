@@ -137,20 +137,27 @@ export const updateProfile = async (req, res) => {
         }
         res.status(200).json(updatedUser);
 
-        // live refresh for connected clients only (never broadcast to strangers)
-        const { getConnectedUserIds } = await import("../../lib/connections.js");
-        const contactIds = await getConnectedUserIds(updatedUser._id);
-        for (const contactId of contactIds) {
-            const socketId = getReciverSocketId(contactId);
-            if (socketId) {
-                io.to(socketId).emit("userUpdated", {
-                    _id: updatedUser._id,
-                    fullName: updatedUser.fullName,
-                    email: updatedUser.email,
-                    username: updatedUser.username,
-                    profilePic: updatedUser.profilePic,
-                });
+        // live refresh for connected clients only (never broadcast to strangers).
+        // best-effort: the response is already sent, so NEVER let a socket or
+        // network hiccup here re-enter the catch block (it would crash the
+        // process with ERR_HTTP_HEADERS_SENT).
+        try {
+            const { getConnectedUserIds } = await import("../../lib/connections.js");
+            const contactIds = await getConnectedUserIds(updatedUser._id);
+            for (const contactId of contactIds) {
+                const socketId = getReciverSocketId(contactId);
+                if (socketId) {
+                    io.to(socketId).emit("userUpdated", {
+                        _id: updatedUser._id,
+                        fullName: updatedUser.fullName,
+                        email: updatedUser.email,
+                        username: updatedUser.username,
+                        profilePic: updatedUser.profilePic,
+                    });
+                }
             }
+        } catch (liveErr) {
+            console.log("userUpdated fan-out skipped:", liveErr?.message || liveErr);
         }
 
     } catch (err) {
