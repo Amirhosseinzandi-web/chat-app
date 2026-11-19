@@ -39,6 +39,14 @@ const messageSchema = new mongoose.Schema(
         edited: {
             type: Boolean,
             default: false
+        },
+        // Telegram-style read receipts: WHO has actually SEEN this message.
+        // Idempotent - an id can appear at most once, so re-reads and
+        // re-syncs can never double-count.
+        readBy: {
+            type: [mongoose.Schema.Types.ObjectId],
+            ref: "userModel",
+            default: []
         }
     },
     { timestamps: true }

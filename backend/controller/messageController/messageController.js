@@ -16,6 +16,33 @@ import { areConnected, getConnectedUserIds } from "../../lib/connections.js";
 // Now it only returns people you are actually connected with: an accepted
 // connection request, or a conversation you already had before this shipped.
 // Reach new people by their @id through the friend search instead.
+// GET /api/message/unread
+// Exact badge numbers for MY conversations (Telegram-style). One aggregate;
+// readBy membership makes it idempotent under any number of reloads.
+export const getUnreadCounts = async (req, res) => {
+    try {
+        const myId = mongoose.Types.ObjectId.createFromHexString(String(req.user._id));
+        const rows = await messageModel.aggregate([
+            {
+                $match: {
+                    receiverId: myId,
+                    deletedFor: { $ne: myId },
+                },
+            },
+            { $project: { senderId: 1, readBy: 1 } },
+            { $unwind: { path: "$readBy", preserveNullAndEmptyArrays: true } },
+            { $match: { $expr: { $ne: ["$readBy", myId] } } },
+            { $group: { _id: "$senderId", count: { $sum: 1 } } },
+        ]);
+        const counts = {};
+        for (const row of rows) counts[String(row._id)] = row.count;
+        res.status(200).json(counts);
+    } catch (err) {
+        console.log(`error in getUnreadCounts controller, error is ==> ${err}`);
+        return res.status(500).json({ message: "server-error" });
+    }
+};
+
 export const getUsersForSidebar = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
@@ -25,7 +52,31 @@ export const getUsersForSidebar = async (req, res) => {
             .find({ _id: { $in: connectedIds } })
             .select("_id fullName username email profilePic createdAt");
 
-        res.status(200).json(filteredUsers);
+        // unread badge per conversation, Telegram-style: messages THEY sent that
+        // I have not opened yet. One aggregate, no N+1.
+        const unreadRows = await messageModel.aggregate([
+            {
+                $match: {
+                    receiverId: mongoose.Types.ObjectId.createFromHexString(String(loggedInUserId)),
+                    deletedFor: { $ne: mongoose.Types.ObjectId.createFromHexString(String(loggedInUserId)) },
+                },
+            },
+            { $project: { senderId: 1, readBy: 1 } },
+            { $unwind: { path: "$readBy", preserveNullAndEmptyArrays: true } },
+            {
+                $match: {
+                    $expr: { $ne: ["$readBy", mongoose.Types.ObjectId.createFromHexString(String(loggedInUserId))] },
+                },
+            },
+            { $group: { _id: "$senderId", count: { $sum: 1 } } },
+        ]);
+        const unreadCounts = {};
+        for (const row of unreadRows) unreadCounts[String(row._id)] = row.count;
+
+        res.status(200).json(filteredUsers.map((u) => ({
+            ...u.toObject(),
+            unreadCount: unreadCounts[String(u._id)] || 0,
+        })));
     } catch (error) {
         console.log(`error in getUsersForSidebar controller, error is ==> ${error}`);
         return res.status(500).json({ message: "server-error" });
@@ -59,6 +110,27 @@ export const getMessages = async (req, res) => {
 
         // hide messages the viewer deleted "for me"
         const visible = messages.filter((m) => !m.deletedFor?.some((id) => id.equals(myId)))
+
+        // opening the conversation = VIEWING it: mark the messages the other side
+        // sent as read by ME. $addToSet keeps it idempotent (requirement 7), the
+        // sender filter guarantees my own messages never count (requirement 5).
+        const unreadIds = visible
+            .filter((m) => String(m.senderId) !== String(myId))
+            .filter((m) => !m.readBy?.some((id) => id.equals(myId)))
+            .map((m) => m._id);
+        if (unreadIds.length > 0) {
+            await messageModel.updateMany(
+                { _id: { $in: unreadIds } },
+                { $addToSet: { readBy: myId } }
+            );
+            // the list the client receives already reflects the read state
+            for (const m of visible) {
+                if (unreadIds.some((id) => id.equals(m._id))) {
+                    m.readBy = [...(m.readBy || []), myId];
+                }
+            }
+        }
+
         res.status(200).json(visible)
 
     } catch (err) {
@@ -135,8 +207,16 @@ export const sendMessage = async (req, res) => {
 
 
         if (receiverSocketid) {
-            // receiver is online -> real-time socket delivery
-            io.to(receiverSocketid).emit("newMessage", newMessage)
+            // receiver is online -> real-time socket delivery.
+            // unreadCount rides along so the badge updates instantly (req. 2+8):
+            // every doc of MINE that they have not read yet, including this one.
+            // readBy must not contain the RECEIVER (they have not read it yet)
+            const receiverUnread = await messageModel.countDocuments({
+                senderId: senderId,
+                receiverId: receiverId,
+                readBy: { $ne: receiver._id },
+            });
+            io.to(receiverSocketid).emit("newMessage", { ...newMessage.toObject(), unreadCount: receiverUnread })
         } else {
             // receiver is OFFLINE -> web push notification to all their devices
             // (honors app-level and per-chat mute; fire-and-forget)

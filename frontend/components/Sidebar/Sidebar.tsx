@@ -10,7 +10,7 @@ import SidebarSkeleton from "../skeletons/SidebarSkeleton";
 
 
 const SidebarComponent = () => {
-    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
+const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, unreadCounts, fetchUnreadCounts } = useChatStore();
     const [showOnlineOnly, setShowOnlineOnly] = useState(false);
     const [showFinder, setShowFinder] = useState(false);
     const { onlineUsers, authUser } = useAuthStore();
@@ -20,9 +20,12 @@ const SidebarComponent = () => {
 
 
     useEffect(() => {
-        getUsers()
-    }, [getUsers]);
-
+        getUsers();
+        fetchUnreadCounts();
+        // cross-device truth: badges re-sync periodically (req. 6)
+        const iv = setInterval(fetchUnreadCounts, 30000);
+        return () => clearInterval(iv);
+    }, [getUsers, fetchUnreadCounts]);
 
     const filteredUsers = showOnlineOnly
         ? users.filter((user: UsersType) => onlineUsers.includes(user._id))
@@ -136,7 +139,15 @@ const SidebarComponent = () => {
                             <div className="font-medium truncate">{user.fullName}</div>
                             <div className="text-sm text-zinc-400">
                                 {onlineUsers.includes(user._id) ? "Online" : "Offline"}
-                            </div>
+                        </div>
+
+                        {/* Telegram-style unread counter */}
+                        {(unreadCounts[user._id] || 0) > 0 && (
+                            <span className="ml-auto bg-primary text-primary-content text-xs font-semibold
+                                rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center shrink-0">
+                                {unreadCounts[user._id] > 99 ? "99+" : unreadCounts[user._id]}
+                            </span>
+                        )}
                         </div>
                     </button>
                 ))}
@@ -155,6 +166,7 @@ const SidebarComponent = () => {
                         // they are contacts now: open the conversation and refresh the list
                         setSelectedUser({ ...user, email: user.email || "", profilePic: user.profilePic || "" });
                         getUsers();
+                        fetchUnreadCounts();
                     }}
                 />
             )}

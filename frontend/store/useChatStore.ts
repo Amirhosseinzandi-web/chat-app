@@ -12,6 +12,8 @@ export type UsersType = {
     fullName: string
     username?: string | null
     createdAt?: string
+    // Telegram-style unread badge for this conversation (messages I have not opened)
+    unreadCount?: number
 }
 
 export type MessagesType = {
@@ -30,6 +32,10 @@ export type MessagesType = {
 type ChatStoreType = {
     messages: MessagesType[]
     users: UsersType[]
+    unreadCounts: Record<string, number>
+    fetchUnreadCounts: () => Promise<void>
+    applyIncomingUnread: (senderId: string) => void
+    resetUnread: (userId: string) => void
     selectedUser: null | UsersType
     isUsersLoading: boolean
     isMessagesLoading: boolean
@@ -64,6 +70,31 @@ const mergeMessages = (a: MessagesType[], b: MessagesType[]): MessagesType[] => 
 export const useChatStore = create<ChatStoreType>((set, get) => ({
     messages: [],
     users: [],
+    unreadCounts: {},
+    fetchUnreadCounts: async () => {
+        try {
+            const res = await axiosInstance.get("/api/message/unread");
+            set({ unreadCounts: res.data || {} });
+        } catch {
+            // badges are cosmetic on failure - the next poll/socket event fixes them
+        }
+    },
+    applyIncomingUnread: (senderId) => {
+        // idempotent under reloads: the source of truth is refetchUnread below;
+        // this optimistic bump just makes the badge react instantly (req. 2+8)
+        set((state) => ({
+            unreadCounts: { ...state.unreadCounts, [senderId]: (state.unreadCounts[senderId] || 0) + 1 },
+        }));
+        get().fetchUnreadCounts();
+    },
+    resetUnread: (userId) => {
+        set((state) => {
+            if (!state.unreadCounts[userId]) return state;
+            const next = { ...state.unreadCounts };
+            delete next[userId];
+            return { unreadCounts: next };
+        });
+    },
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
@@ -89,6 +120,9 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
             const res = await axiosInstance.get(`/api/message/${userId}`);
             // merge instead of replace so messages arriving during the fetch are not lost
             set({ messages: mergeMessages(get().messages, res.data) })
+            // the fetch itself marked the viewed messages as read server-side:
+            // reset the badge here so UI and server agree (req. 4+10)
+            get().resetUnread(userId);
         }
         catch (error) {
             console.log("error in use chat store , get messages , error is ==> ", error);
@@ -122,9 +156,16 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
         socket.off("newMessage");
 
         socket.on("newMessage", (newMessage: MessagesType) => {
-            // only accept messages from the currently selected contact
-            if (newMessage.senderId !== selectedUser._id) return;
-            set((state) => ({ messages: mergeMessages(state.messages, [newMessage]) }));
+            const senderId = String(newMessage.senderId);
+            if (selectedUser && senderId === selectedUser._id) {
+                // this conversation is OPEN -> the server marks it read on the
+                // next getMessages; merge the bubble immediately (req. 8/9)
+                set((state) => ({ messages: mergeMessages(state.messages, [newMessage]) }));
+                return;
+            }
+            // conversation closed -> raise their badge (my own messages never
+            // reach this client as "newMessage", so req. 5 holds)
+            get().applyIncomingUnread(senderId);
         });
 
         // the other side edited a message -> update it in place
@@ -172,6 +213,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
     deleteMessage: async (messageId, scope) => {
         try {
             await axiosInstance.delete(`/api/message/${messageId}`, { data: { scope } });
+            get().fetchUnreadCounts();
             // remove it from my view (for "all" the other side gets the socket event)
             set((state) => ({ messages: state.messages.filter((m) => m._id !== messageId) }));
         } catch (error) {
@@ -188,6 +230,7 @@ export const useChatStore = create<ChatStoreType>((set, get) => ({
             const otherId = selectedUser?._id ?? authUser?._id;
             if (!otherId) return;
             await axiosInstance.delete(`/api/message/clear/${otherId}`, { data: { scope } });
+            get().fetchUnreadCounts();
             set({ messages: [] });
         } catch (error) {
             console.log("error in clear conversation, error is ==> ", error);
