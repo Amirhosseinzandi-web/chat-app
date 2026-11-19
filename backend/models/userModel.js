@@ -30,6 +30,12 @@ const userSchema = new mongoose.Schema(
             enum: ["user", "admin"],
             default: "user"
         },
+        username: {
+            type: String,
+            default: null,
+            lowercase: true,
+            trim: true
+        },
         // notifications: false = no push at all (the app-level mute, like Telegram)
         notificationsEnabled: {
             type: Boolean,
